@@ -164,3 +164,24 @@ export const onNewSale = function(data, onDone) {
         onOk: (res) => { onDone(); }
     });
 };
+
+export const searchClientByDocument = async (document) => {
+    try {
+        const response = await fetch(`${apiAddress}/clients/search/${encodeURIComponent(document)}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // Devolver el primer cliente que coincida (asumiendo que el documento es único)
+        return data.length > 0 ? data[0] : null;
+    } catch (error) {
+        console.error('Error buscando cliente:', error);
+        return null;
+    }
+};

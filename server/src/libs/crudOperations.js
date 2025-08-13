@@ -77,20 +77,27 @@ export async function updateById(req, res, table) {
 
 export async function search(req, res, table) {
     handleQueryExecution(res, async (db) => {
-        const fields = table.fields;
-        
-        let query = `SELECT * FROM ${table.name} WHERE CONCAT_WS(' '`;
-        
-        for (let i = 0; i < fields.length; i++) {
-            query += `, ${fields[i]}`;
+        const searchQuery = "%" + req.params.query + "%";
+        let query;
+        let params;
+
+        // Búsqueda específica para documentos en la tabla Clients
+        if (table.name === 'Clients' && req.params.query) {
+            query = `SELECT * FROM ${table.name} WHERE IdDocument LIKE ?`;
+            params = [searchQuery];
+        } else {
+            // Búsqueda general para otras tablas
+            const fields = table.fields;
+            query = `SELECT * FROM ${table.name} WHERE `;
+            
+            const conditions = fields.map(field => `${field} LIKE ?`);
+            query += conditions.join(' OR ');
+            
+            // Crear un array de parámetros con el término de búsqueda para cada campo
+            params = new Array(fields.length).fill(searchQuery);
         }
 
-        query += ") LIKE ?";
-
-        const searchQuery = "%" + req.params.query + "%";
-
-        const [results, queryFields] = await db.execute(query, [ searchQuery ]);
-
+        const [results] = await db.execute(query, params);
         res.status(200).json(results);
     });
 }

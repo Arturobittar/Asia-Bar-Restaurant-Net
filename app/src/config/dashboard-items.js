@@ -14,7 +14,7 @@ export const dashboardItems = [
             new DashboardSubItem('Control', 'Menú', 'Control de Menú'), 
             new DashboardSubItem('Control', 'Contornos', 'Control de Contornos'),
             new DashboardSubItem('Control', 'Productos', 'Control de Productos'),
-            new DashboardSubItem('Control', 'Repartidores', 'Control de Repartidores'),
+            /*new DashboardSubItem('Control', 'Repartidores', 'Control de Repartidores')},*/
         ] 
     },
     {
