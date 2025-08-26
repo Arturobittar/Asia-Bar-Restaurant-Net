@@ -82,8 +82,8 @@ export async function search(req, res, table) {
         let params;
 
         // Búsqueda específica para documentos en la tabla Clients
-        if (table.name === 'Clients' && req.params.query) {
-            query = `SELECT * FROM ${table.name} WHERE IdDocument LIKE ?`;
+        if (table.name === 'clients' && req.params.query) {
+            query = `SELECT * FROM ${table.name} WHERE Iddocument LIKE ?`;
             params = [searchQuery];
         } else {
             // Búsqueda general para otras tablas
