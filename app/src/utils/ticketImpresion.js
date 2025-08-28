@@ -119,6 +119,15 @@ export const generarTicket = (datos) => {
   ticket.push(centrarTexto('RESTAURANTE ASIA'));
   ticket.push(''); // Línea en blanco
   
+  // Mostrar dirección solo si existe
+  if (datos.direccion) {
+    const direccionLineas = dividirEnLineas(datos.direccion, MAX_CHARS);
+    direccionLineas.forEach(linea => ticket.push(centrarTexto(linea)));
+  }
+  
+  ticket.push(centrarTexto(datos.telefono || 'Tel: 555-123-4567'));
+  ticket.push(''); // Línea en blanco
+  
   // Línea divisoria superior
   ticket.push(lineaDivisoria('*'));
   

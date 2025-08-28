@@ -69,10 +69,8 @@ function ContenidoConfirmacionVenta() {
 
     const products = order.products;
         
-    const subtotal = products.reduce((sum, product) => sum + product[3] * product[1], 0);
-    const iva = subtotal * 0.16; // 16% de IVA
-    const total = subtotal + iva; 
-
+    // Calcular el total directo sin IVA
+    const total = products.reduce((sum, product) => sum + (product[3] * product[1]), 0);
 
     const afterPrintDialog = (id) => {
         Swal.fire({
@@ -107,7 +105,7 @@ function ContenidoConfirmacionVenta() {
         
         const datosTicket = {
             empresa: 'RESTAURANTE ASIA',
-            direccion: 'Av. Principal #123',
+            direccion: order.type === 'Delivery' ? order.address : 'Av. Principal #123',
             telefono: '555-123-4567',
             fecha: fecha,
             hora: hora,
@@ -121,7 +119,7 @@ function ContenidoConfirmacionVenta() {
                 precio: product[1] * product[3],
                 precioUnitario: product[1] 
             })),
-            subtotal: subtotal,
+            subtotal: total,
             total: total,
             mensaje: order.note || '¡Gracias por su preferencia!'
         };
