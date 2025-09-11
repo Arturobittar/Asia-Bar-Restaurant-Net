@@ -5,10 +5,12 @@ import { dashboardItems } from '../../config/dashboard-items.js';
 import { getPageFromPath } from '../../config/pages.js';
 import './dashboard-page.css';
 import { Link } from 'react-router-dom';
+import { getNetworkConfig } from '../../config/network';
 import '../../Visual-Resources/Logo.png';  
 import Popup from '../reusables/Pop-up.js'; 
 import { onLogout } from '../../utils/api.js';
 import { useTableChanger } from "../../hooks/session.js";
+import QRCodeButton from '../../components/QRCodeButton';
 
 function MenuToggleButton({ isSidebarOpen, onClick }) {
     const className = `menu-toggle-button ${isSidebarOpen ? 'sidebar-open' : ''}`;
@@ -90,12 +92,39 @@ function SideBarMenu({ expandedIndex, setExpandedIndex }) {
 function Sidebar({ isSidebarOpen, expandedIndex, setExpandedIndex, onSidebarClick }) {
     const statusString = (isSidebarOpen) ? "open" : "";
     const className = "sidebar " + statusString;
+    const [showQR, setShowQR] = useState(false);
+    const { serverUrl } = getNetworkConfig();
+
+    const handleLogoClick = (event) => {
+        event.stopPropagation();
+        setShowQR(!showQR);
+    };
 
     return (
-        <aside className={className} onClick={ onSidebarClick }>
+        <aside className={className} onClick={onSidebarClick}>
             <div className="logo-container">
-                <div className="logo-placeholder">
-                <img src={require('../../Visual-Resources/Logo.png')} alt="Logo" className="logo-image" />
+                <div 
+                    className={`logo-placeholder ${showQR ? 'show-qr' : ''}`} 
+                    onClick={handleLogoClick}
+                >
+                    {!showQR ? (
+                        <img 
+                            src={require('../../Visual-Resources/Logo.png')} 
+                            alt="Logo" 
+                            className="logo-image" 
+                           
+                        />
+                    ) : (
+                        <div className="qr-inside-logo">
+                            <div className="qr-code-holder">
+                                <img 
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(serverUrl)}`} 
+                                    alt="Código QR de acceso"
+                                />
+                            </div>
+                            
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -103,7 +132,7 @@ function Sidebar({ isSidebarOpen, expandedIndex, setExpandedIndex, onSidebarClic
                 Asia Menú
             </div>
 
-            <SideBarMenu expandedIndex={ expandedIndex } setExpandedIndex={setExpandedIndex} />
+            <SideBarMenu expandedIndex={expandedIndex} setExpandedIndex={setExpandedIndex} />
         </aside>
     );
 }

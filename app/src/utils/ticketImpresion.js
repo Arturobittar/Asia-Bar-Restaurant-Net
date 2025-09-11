@@ -119,15 +119,6 @@ export const generarTicket = (datos) => {
   ticket.push(centrarTexto('RESTAURANTE ASIA'));
   ticket.push(''); // Línea en blanco
   
-  // Mostrar dirección solo si existe
-  if (datos.direccion) {
-    const direccionLineas = dividirEnLineas(datos.direccion, MAX_CHARS);
-    direccionLineas.forEach(linea => ticket.push(centrarTexto(linea)));
-  }
-  
-  ticket.push(centrarTexto(datos.telefono || 'Tel: 555-123-4567'));
-  ticket.push(''); // Línea en blanco
-  
   // Línea divisoria superior
   ticket.push(lineaDivisoria('*'));
   
@@ -135,15 +126,29 @@ export const generarTicket = (datos) => {
   ticket.push(alinearLados(`Ticket #${datos.numeroTicket || '0000'}`, datos.fecha || ''));
   ticket.push(alinearLados(`${datos.hora || ''}`, ''));
   
-  // Mostrar número de mesa solo si el tipo de venta es "Para comer aquí"
+  // Mostrar número de mesa solo si el tipo de venta es "Para comer aquí" o "Delivery"
   const esParaComerAqui = datos.tipoVenta && 
     (datos.tipoVenta.toLowerCase().includes('comer') || 
      datos.tipoVenta.toLowerCase().includes('aquí'));
      
+  const esDelivery = datos.tipoVenta && datos.tipoVenta.toLowerCase().includes('delivery');
+     
+  // Mostrar el tipo de venta primero
+  ticket.push(`TIPO: ${datos.tipoVenta || 'Para llevar'}`);
+  
+  // Luego mostrar mesa o dirección según corresponda
   if (esParaComerAqui && datos.mesa) {
     ticket.push(`Mesa: ${datos.mesa || ''}`);
+  } else if (esDelivery && datos.direccion) {
+    // Mostrar dirección para delivery en la misma línea
+    const lineaDireccion = `Dirección: ${datos.direccion}`;
+    const lineasDireccion = dividirEnLineas(lineaDireccion, MAX_CHARS);
+    
+    // Agregar cada línea de la dirección
+    lineasDireccion.forEach(linea => {
+      ticket.push(linea);
+    });
   }
-  ticket.push(`TIPO: ${datos.tipoVenta || 'Para llevar'}`);
 
   // Mostrar información del cliente si está disponible
   if (datos.clienteNombre || datos.clienteId) {

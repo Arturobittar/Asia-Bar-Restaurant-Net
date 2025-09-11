@@ -8,6 +8,11 @@ import socket
 import re
 import sys
 from pathlib import Path
+import io
+
+# Configurar la salida para soportar caracteres Unicode en Windows
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 def get_local_ip():
     """Obtiene la dirección IP local"""
@@ -44,7 +49,7 @@ const API_BASE_URL = isLocalhost
   : 'http://{ip}:9090/api';
 
 export const apiAddress = API_BASE_URL;
-"""
+""".format(ip=ip)
 
 def get_app_js_content(ip):
     """Genera el contenido para app.js del servidor"""
@@ -93,6 +98,21 @@ app.listen(PORT, '0.0.0.0', () => {{
 }});
 """
 
+def update_react_network_config(ip):
+    """Actualiza el archivo de configuración de red de React"""
+    try:
+        config_path = os.path.join('app', 'src', 'config', 'network.js')
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(f"// Configuración de red actualizada automáticamente\n")
+            f.write(f"const networkConfig = {{\n    serverUrl: 'http://{ip}:3000'\n}};\n\n")
+            f.write("export const getNetworkConfig = () => networkConfig;\n")
+            f.write("export const updateNetworkConfig = (newConfig) => {\n    Object.assign(networkConfig, newConfig);\n};\n")
+        print(f"✅ Configuración de red de React actualizada con la IP: {ip}")
+        return True
+    except Exception as e:
+        print(f"❌ Error al actualizar la configuración de React: {e}")
+        return False
+
 def main():
     print("=== Configuración de Red para Asia Bar Restaurant ===")
     print("Obteniendo configuración de red...")
@@ -116,9 +136,11 @@ def main():
     )
     
     update_file(
-    project_root / "server" / "src" / "index.js",
-    get_server_index_js_content(local_ip)
-)
+        project_root / "server" / "src" / "index.js",
+        get_server_index_js_content(local_ip)
+    )
+    
+    update_react_network_config(local_ip)
     
     # Actualizar archivo .env
     env_path = project_root / "server" / ".env"
