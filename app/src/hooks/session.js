@@ -8,6 +8,12 @@ export function useTableChanger(table) {
     return () => setSession(new Session(session.rol, session.username, table, session.modifyID));
 }
 
+export function useLateTableChanger() {
+    const { session, setSession } = useContext(SessionContext);
+  
+    return (table) => setSession(new Session(session.rol, session.username, table, session.modifyID));
+};
+
 export function useModifyIDChanger() {
     const { session, setSession } = useContext(SessionContext);
   

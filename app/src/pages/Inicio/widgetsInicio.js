@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Dashboard from "../reusables/dashboard-page";
 import "./widgetsInicioCss/Mesa.css"
-import "./widgetsInicioCss/RecienAgregado.css"
+/*import "./widgetsInicioCss/RecienAgregado.css"*/
 import "./widgetsInicioCss/MasVendidos.css"
 import "./widgetsInicioCss/PedidoTicket.css"
 import {InformacionDelProductoModal, InformacionDelPedidoModal} from "./modalesInicio.js"
@@ -135,7 +134,7 @@ export function Mesa({nombre, onOpen}){
 
 
 // Esta funcion recibe "onOpen" como argumento, esta es una funcion que se encarga de abrir el modal cuando se le da click al boton de informacion. La idea seria que al darle al boton se ejecute otra funcion que busque los datos del producto en la base de datos y luego ejecute la funcion onOpen abriendo el modal conteniendo el componente "InformacionDelProductoModal" y a su ves este tendria en "datosPorducto" un diccionario que tiene los datos necesarios para rellenar el modal. 
-export function RecienAgregado({nombre, precio, categoria, onOpen}){
+/*export function RecienAgregado({nombre, precio, categoria, onOpen}){
 
    
 
@@ -156,7 +155,7 @@ export function RecienAgregado({nombre, precio, categoria, onOpen}){
 
    )
 
-}
+}*/
 
 
 
@@ -180,11 +179,9 @@ export function MasVendidos({top, nombre, srcImg, precio, totalVentas, onOpen}){
          
          
          <span className="nombreMasVendido">{nombre}</span>
-         <span className="precioMasVendido">{precio}$</span>
-         <span className="totalDeVentas">total de ventas: {totalVentas}</span>
-         <button className="btnInformacionMasVendidos" onClick={() => onOpen(<InformacionDelProductoModal datosProducto={DatosPrueba} />)}><Info size={20} /></button>
+         <span className="precioMasVendido">{Number.parseFloat(precio).toFixed(2)}$</span>
+         <span className="totalDeVentas">Total de Ventas: {totalVentas}</span>
          
-
 
       </div>
 
@@ -205,20 +202,19 @@ export function MasVendidos({top, nombre, srcImg, precio, totalVentas, onOpen}){
 
 
 
-export function PedidoTicket({numeroPedido, nombreCompletoComprador, totalProductos, tipoDePedido, totalTicket, onOpen}){
+export function PedidoTicket({numeroPedido, clientName, totalProductos, tipoDePedido, totalTicket, onOpen}){
 
    return (
 
       <div className="mainPedidoTicket"> {/* ticket visual en computadora, no la impresion*/}
 
          <div className="informacionPedidoTicket">
-            <h3 className="numeroDePedido">Pedido Nro: {numeroPedido}</h3>
-            <span className="NombreComprador">{nombreCompletoComprador}</span>
-            <span className="totalProductosTicket">cantidad productos: x{totalProductos}</span>
+            <h3 className="numeroDePedido">Pedido N° {numeroPedido}</h3>
+            <span className="NombreComprador">{clientName}</span>
             <span className="tipoDePedidoTicket">Tipo de pedido: {tipoDePedido}</span>
          </div>
 
-         <span className="totalTicket">{totalTicket}$</span>
+         <span className="totalTicket">{Number.parseFloat(totalTicket).toFixed(2)}$</span>
 
          <div className="contenedorBtnPedidoTicket">
             <button className="botonInformacionTicket" onClick={() => onOpen(<InformacionDelPedidoModal datosPedido={DatosPedidoPrueba}/>)}><Info size={20} /></button>

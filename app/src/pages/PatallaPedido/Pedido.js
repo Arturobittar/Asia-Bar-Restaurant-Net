@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import './Pedido.css'
 
-import Swal from 'sweetalert2'; 
-
 import { Producto } from "./Widgets";
 import { Pedido as WidgethPedido } from "./Widgets" ;
 import { WidgetNota } from "./Widgets";
-import Dashboard from "../reusables/dashboard-page";
+import DashboardPage from "../../components/layout/dashboard-page.js";
 
 import { useNavigate } from "react-router-dom";
 import { categories, useCategory, useDishes, useProducts, useOrderChanger } from "../../hooks/order.js";
+
+import { questionAlert } from "../../utils/alerts.js";
 
 const CategoryTitles = ["Menú", "Contornos", "Productos", "Todos"];
 
@@ -177,20 +177,14 @@ function ContenidoPedido() {
                
                 <button id="btnCancelar" 
                     className="btnPedido" 
-                    onClick={ () => {
-                        Swal.fire({
-                                title: "¿Esta seguro?",
-                                text: "Al cancelar, se perderán todos los datos de la venta actual",
-                                showDenyButton: true,
-                                icon: "question",
-                                confirmButtonText: "Sí",
-                                denyButtonText: "No"
-                            }).then( (result) => {
-                                if (result.isConfirmed) {
-                                    navigate('/informacion-de-venta');
-                                }                       
-                            });
-                    }}>Cancelar</button>
+                    onClick={  () => questionAlert(
+                        "¿Está seguro?",
+                        "Al cancelar, se perderán todos los datos de la venta actual",
+                        () => navigate('/informacion-de-venta'),
+                    )}
+                >
+                    Cancelar
+                </button>
                 <button 
                     id="btnContinuar" 
                     className="btnPedido" 
@@ -227,7 +221,9 @@ function ContenidoPedido() {
 
 const Pedido = () => {
     return (
-        <Dashboard content={ <ContenidoPedido/> } />
+        <DashboardPage>
+            <ContenidoPedido/>
+        </DashboardPage>
     );
 }
 

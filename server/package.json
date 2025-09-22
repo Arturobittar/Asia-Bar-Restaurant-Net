@@ -90,13 +90,14 @@
     "vary": "^1.1.2"
   },
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "dev": "concurrently \"python ../configuracionIP.py\" \"nodemon src/index.js\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "nodemon": "^3.1.9"
   }
 }

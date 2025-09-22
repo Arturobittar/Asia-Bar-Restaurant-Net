@@ -4,8 +4,8 @@ export const dashboardItems = [
     {
         title: "Control de Ventas",
         subItems: [ 
-            new DashboardSubItem('Informacion de Venta', 'Ventas'), 
-            new DashboardSubItem('Control', 'Ventas', 'Control de Ventas') 
+            new DashboardSubItem('Informacion de Venta', 'Menú', 'Nueva Venta'), 
+            new DashboardSubItem('Control de Ventas', 'Menú', 'Control') 
         ] 
     },
     {
@@ -14,7 +14,7 @@ export const dashboardItems = [
             new DashboardSubItem('Control', 'Menú', 'Control de Menú'), 
             new DashboardSubItem('Control', 'Contornos', 'Control de Contornos'),
             new DashboardSubItem('Control', 'Productos', 'Control de Productos'),
-            /*new DashboardSubItem('Control', 'Repartidores', 'Control de Repartidores')},*/
+            //new DashboardSubItem('Control', 'Repartidores', 'Control de Repartidores'),
         ] 
     },
     {

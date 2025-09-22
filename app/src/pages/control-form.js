@@ -4,7 +4,8 @@ import { useFormFields, useFormValues } from "../hooks/form.js";
 import { useModifyID } from "../hooks/session.js";
 
 import ControlForm from '../components/layout/control-form.js';
-import { RequiredInputBox, RequiredNumberBox, RequiredSelector, RequiredBoolean } from '../components/ui/form.js';
+
+import { RequiredInput } from '../components/ui/form.js';
 
 import { onControlForm } from '../utils/api.js';
 
@@ -14,7 +15,7 @@ function ControlFormPage() {
 
     const table = useTable();
     const modifyID = useModifyID();
-    const titles = table.fields;
+    const tableFields = table.fields;
     
     const [fields, setters] = useFormFields(7);
     useFormValues(table.dbname, modifyID, setters);
@@ -23,30 +24,23 @@ function ControlFormPage() {
 
     return (
         <ControlForm title={ table.name } onSubmit={ (e) => onControlForm(e, table, fields, navigate, modifyID) } > 
-            { titles.map( (title, i) => {
+            { tableFields.map( (tableField, i) => {
         
                 const value = fields[i];
+                const setter = setters[i];
                 
-                const type = fieldTypes.find((type) => Object.hasOwn(title, type)) ?? "text";
-                const inputTitle = type === "text" ? title : title[type];
-
-                const mandatory = {
-                    title: inputTitle,
-                    textSetter: setters[i],
-                    value: value
-                };
+                const type = fieldTypes.find((type) => Object.hasOwn(tableField, type));
+                const title = tableField[type];
 
                 return( 
-                    type === "text" ?
-                        <RequiredInputBox key={ title } {...mandatory} /> :
-                    type === "number" ? 
-                        <RequiredNumberBox key={ title[type] } isDecimal={ true } {...mandatory} /> :
-                    type === "int" ? 
-                        <RequiredNumberBox key={ title[type] } {...mandatory} /> :
-                    type === "combo" ?
-                        <RequiredSelector key={ title[type] } options={ title.options } value={ value } {...mandatory} /> :
-                    type === "bool" ?
-                        <RequiredBoolean key={ title } {...mandatory} /> : null
+                    <RequiredInput 
+                        key={ `input-${title}` } 
+                        type={ type } 
+                        title={ title } 
+                        onChange={ setter } 
+                        value={ value } 
+                        options={ tableField.options } 
+                    /> 
                 );
             })}
         </ControlForm>

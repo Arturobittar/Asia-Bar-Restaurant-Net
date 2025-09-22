@@ -7,6 +7,7 @@ import {
 
 import { ContextWrapper } from './context/session.js';
 import { OrderWrapper } from './context/order.js';
+import { SaleWrapper } from './context/sale.js';
 
 import { pages } from './config/pages.js';
 import { routes } from './config/routes.js';
@@ -26,7 +27,9 @@ function App() {
     return (
         <ContextWrapper>
             <OrderWrapper>
-                <Content /> 
+                <SaleWrapper>
+                    <Content /> 
+                </SaleWrapper>
             </OrderWrapper>
         </ContextWrapper>
     );

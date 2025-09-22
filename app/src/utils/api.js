@@ -1,6 +1,8 @@
 import { apiAddress } from '../config/api.js'; 
 import { routes } from '../config/routes.js';
 
+import { questionAlert, infoAlert, errorAlert, iconlessAlert, successAlert } from './alerts.js';
+
 function getParsedData(res) {
     if (res.length <= 0)
         return [];
@@ -22,16 +24,29 @@ function api_fetch(fetch_settings) {
     })
         .then(res => {
             if (!res.ok)
-                throw new Error(`HTTP error, Status: ${res.status}`);
+                throw { code: res.status };
 
             fetch_settings.onOk?.(res);
             
             return res.json();
         })
         .catch(error => {
-            const defaultOnError = () => alert(error);
-            const onError = fetch_settings.onError ?? defaultOnError;
-            onError();
+            const onError = fetch_settings.onError;
+
+            if (onError) {
+                onError();
+                return;
+            }
+
+            switch (error.code) {
+                case 401:
+                    errorAlert("Denegado", "Usted no posee los permisos requeridos para esta solicitud");
+                    break;
+
+                default:
+                    errorAlert("Error", "No se ha podido procesar su solicitud correctamente");
+                    break;
+            }
         })
 }
 
@@ -63,16 +78,21 @@ export const onCreate = function(e, tableName, getData, onDone) {
     api_fetch({
         endpoint: tableName,
         body: getData(),
-        onOk: (res) => { onDone(); }
+        onOk: (res) => onDone()
     });
 };
 
 export const onDelete = function(tableName, getID, onDone) {
-    api_fetch({
-        endpoint: `${tableName}/${getID()}`,
-        method: 'DELETE',
-        onOk: (res) => { onDone(); }
-    });
+   questionAlert(
+        "¿Desea eliminar?",
+        "La operación no será revertible",
+        () => api_fetch({
+            endpoint: `${tableName}/${getID()}`,
+            method: 'DELETE',
+            onOk: (res) => onDone() 
+        }),
+        () => infoAlert("Cancelado", "Su operación ha sido cancelada")
+    ); 
 };
 
 export const onUpdate = function(e, tableName, getData, getID, onDone) {
@@ -82,7 +102,7 @@ export const onUpdate = function(e, tableName, getData, getID, onDone) {
         endpoint: `${tableName}/${getID()}`,
         method: 'PUT',
         body: getData(),
-        onOk: (res) => { onDone(); }
+        onOk: (res) => onDone()
     });
 };
 
@@ -92,21 +112,19 @@ export function onLogin(e, username, password, navigate) {
     api_fetch({
         endpoint: "login",
         body: { username: username, password: password },
-        onError: () => { alert("Credenciales invalidas") },
+        onError: () => { errorAlert("Credenciales invalidas", "Sus credenciales no corresponden a ninguna sesión existente") },
         onOk: (res) => {
-            alert("¡Bienvenido de vuelta!");
+            iconlessAlert("Bienvenida", `¡Bienvenido de vuelta, ${username}!`);
             navigate(routes['Inicio']);
         }
     });
 }
 
-export function onLogout(e, navigate) {
-    e.preventDefault(); 
-    
+export function onLogout(navigate) {
     api_fetch({
         endpoint: "logout",
         onOk: (res) => { navigate(routes['Inicio de Sesion']); },
-        onError: () => {  }
+        onError: () => { errorAlert("Error inesperado", "No se ha podido cerrar su sesión") }
     });
 }
 
@@ -119,9 +137,9 @@ export function onControlForm(e, table, values, navigate, modifyId = null) {
     e.preventDefault();
 
     if (modifyId)
-        onUpdate(e, table.dbname, getData, () => modifyId, () => alert("¡Entrada actualizada exitiosamente!"));            
+        onUpdate(e, table.dbname, getData, () => modifyId, () => successAlert("Completado", "¡Entrada actualizada exitiosamente!"));            
     else
-        onCreate(e, table.dbname, getData, () => alert("¡Entrada creada exitiosamente!"));            
+        onCreate(e, table.dbname, getData, () => successAlert("Completado", "¡Entrada creada exitiosamente!"));            
 
 
     navigate(routes['Control']);
@@ -161,27 +179,46 @@ export const onNewSale = function(data, onDone) {
     api_fetch({
         endpoint: "sales",
         body: data,
-        onOk: (res) => { onDone(); }
+        onOk: (res) => onDone()
     });
 };
 
-export const searchClientByDocument = async (document) => {
-    try {
-        const response = await fetch(`${apiAddress}/clients/search/${encodeURIComponent(document)}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-        });
+export const onUpdateSale = function(id, data, onDone) {
+    api_fetch({
+        endpoint: `sales/${id}`,
+        method: 'PUT',
+        body: data,
+        onOk: (res) => onDone()
+    });
+}
 
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
-        }
+export const findClient = async function(id) {
+    if (id == "")
+        return [];
 
-        const data = await response.json();
-        // Devolver el primer cliente que coincida (asumiendo que el documento es único)
-        return data.length > 0 ? data[0] : null;
-    } catch (error) {
-        console.error('Error buscando cliente:', error);
-        return null;
-    }
-};
+    let found = [];
+
+    await api_fetch({
+        endpoint: `clients/${id}`,
+        method: 'GET',
+        onError: () => {}
+    }).then(res => { 
+        found = res ? Object.values(res) : found; 
+        console.log(id); 
+        console.log(found); 
+    })
+
+    return found;
+}
+
+
+export const getTopProducts = async function() {
+    let data = [];
+
+    await api_fetch({
+        endpoint: "top-products",
+        method: 'GET',
+    }).then(res => { data = res; });
+
+    return data;
+}

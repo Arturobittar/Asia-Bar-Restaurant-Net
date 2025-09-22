@@ -6,6 +6,8 @@ import { routes } from '../config/routes.js';
 
 import { getTableData, onDelete } from '../utils/api.js';
 
+import { successAlert } from '../utils/alerts.js';
+
 function useFormNavigate() {
     const changeModifyId = useModifyIDChanger();
     const navigate = useNavigate();
@@ -38,7 +40,7 @@ export function useActionButtons(table) {
 
     const onDeleteClick = (id, hideRow) => {
         onDelete(table.dbname, () => id, () => {
-            alert("registro exitosamente eliminado");
+            successAlert("Completado", "Registro exitosamente eliminado");
             hideRow();
         });
     };

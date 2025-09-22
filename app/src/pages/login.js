@@ -17,8 +17,8 @@ function Login() {
     return (
         <Form title={ "Inicio de Sesión" } onSubmit={ (e) => onLogin(e, username, password, navigate) } >
             <>
-                <RequiredInputBox title={ "Nombre de Usuario" } textSetter={ setUsername } />
-                <RequiredInputBox type='password' title={ "Contraseña" } textSetter={ setPassword } />
+                <RequiredInputBox title={ "Nombre de Usuario" } onChange={ setUsername } />
+                <RequiredInputBox type='password' title={ "Contraseña" } onChange={ setPassword } />
 
                 <SubmitButton text="Acceder" />
             </>

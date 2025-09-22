@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Dashboard from "../reusables/dashboard-page";
-import Swal from 'sweetalert2'; 
+import DashboardPage from "../../components/layout/dashboard-page.js";
 import './confirmacionVenta.css';
 import './ticket.css';
 import { TarjetaProductoInformacionVenta, TarjetaNota, TarjetaDelivery } from './widgetsConfirmacionVenta';
@@ -10,6 +9,8 @@ import { generarTicket } from '../../utils/ticketImpresion';
 import { useOrder, useOrderClearer } from "../../hooks/order.js";
 
 import { getLastSaleID, onNewSale } from "../../utils/api.js";
+
+import { questionAlert, successAlert, infoAlert } from "../../utils/alerts.js";
 
 function printTicket(ticket, afterPrintDialog, id) {
     const printContent = `
@@ -73,27 +74,35 @@ function ContenidoConfirmacionVenta() {
     const total = products.reduce((sum, product) => sum + (product[3] * product[1]), 0);
 
     const afterPrintDialog = (id) => {
-        Swal.fire({
-                title: "Confirmación",
-                text: "¿Se ha completado la venta e impreso el ticket correctamente?",
-                showDenyButton: true,
-                icon: "question",
-                confirmButtonText: "Sí",
-                denyButtonText: "No"
-            }).then( (result) => {
-                if (result.isConfirmed) {
-                    onNewSale({
-                        id: id,
-                        clientID: order.clientID,
-                        type: order.type,
-                        total: total
-                    }, () => {} ); 
-                    orderClearer();
-                    navegar('/Inicio');
-                }                       
-            });
+
+        const productsArray = [];
+        products.map( (product) => productsArray.push({
+            name: product[0],
+            price: product[1],
+            quantity: product[3],
+        }));
+
+        questionAlert(
+            "Confirmación",
+            "¿Se ha completado la venta e impreso el ticket correctamente?",
+            () => {
+                onNewSale({
+                    id: id,
+                    clientId: order.clientID,
+                    clientName: order.clientName,
+                    type: order.type,
+                    products: productsArray
+                }, () => {} ); 
+                orderClearer();
+                navegar('/Inicio');
+                successAlert("Venta Registrada", "Su venta ha sido exitosamente registrada en el sistema");
+            },
+            () => {
+                console.log(products);
+                infoAlert("Información", "Si desea registrar la venta, imprima el ticket y confírmerla nuevamente");
+            }
+        ); 
     };
-   
 
     const imprimirTicket = async () => {
         const ultimaVenta = await getLastSaleID();
@@ -119,7 +128,6 @@ function ContenidoConfirmacionVenta() {
                 precio: product[1] * product[3],
                 precioUnitario: product[1] 
             })),
-            subtotal: total,
             total: total,
             mensaje: order.note || '¡Gracias por su preferencia!'
         };
@@ -140,48 +148,43 @@ function ContenidoConfirmacionVenta() {
         
         <div className='contenedorResumenVenta'>
 
-        { 
-            (order.type !== "Delivery") ? null :
-                (<div className='frameResumenCliente' id='resumenCliente'>
-
-                    <div className='informacionCliente'>
-                            <span className='nombreApellido'>{ order.clientName }</span>
-                            <span className='datoCliente' id='ci'>{ order.clientID }</span>
-
-                            <span className='datoCliente' id='informacionDireccion'>{ order.address }</span>
-                           
-                    </div>
-
-                </div>)
-        }
-
-        <div className='frameResumenVenta' id='resumenVenta'>
-
-            <div className='scrollResumenProductos'>
-
-                { products.map((product, index) => (
-                    <TarjetaProductoInformacionVenta 
-                        key={`producto-${index}`}
-                        nombre={product[0]}
-                        cantidad={product[3]}
-                        precio={product[1]}
-                    />
-                ))}
-                
-                {order.note && (
-                    <TarjetaNota nota={ order.note } />
-                )}
-
-
+            <div className='frameResumenCliente' id='resumenCliente'>
+                <div className='informacionCliente'>
+                    {order.clientName && <span className='nombreApellido'>{order.clientName}</span>}
+                    {order.clientID && <span className='datoCliente' id='ci'>{order.clientID}</span>}
+                    {order.type === "Delivery" && order.address && (
+                        <span className='datoCliente' id='informacionDireccion'>{order.address}</span>
+                    )}
+                </div>
             </div>
 
-            <div className='totalVenta'>
+            <div className='frameResumenVenta' id='resumenVenta'>
 
-                <span className='totalTexto'>Total: ${total.toFixed(2)}</span>
+                <div className='scrollResumenProductos'>
+
+                    { products.map((product, index) => (
+                        <TarjetaProductoInformacionVenta 
+                            key={`producto-${index}`}
+                            nombre={product[0]}
+                            cantidad={product[3]}
+                            precio={product[1]}
+                        />
+                    ))}
+                    
+                    {order.note && (
+                        <TarjetaNota nota={ order.note } />
+                    )}
+
+
+                </div>
+
+                <div className='totalVenta'>
+
+                    <span className='totalTexto'>Total: ${total.toFixed(2)}</span>
+
+                </div>
 
             </div>
-
-        </div>
 
 
         </div>
@@ -210,7 +213,11 @@ function ContenidoConfirmacionVenta() {
 
 
 function ConfirmacionVenta(){
-    return (<Dashboard content={ <ContenidoConfirmacionVenta/> } />)
+    return (
+        <DashboardPage>
+            <ContenidoConfirmacionVenta/> 
+        </DashboardPage>
+    );
 }
 
 export default ConfirmacionVenta

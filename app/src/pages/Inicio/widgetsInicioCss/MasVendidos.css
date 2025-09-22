@@ -1,85 +1,79 @@
 .mainMasVendidos{
     display: flex;
     flex-direction: column;
-    
+    align-items: center;
     width: 100%;
-    max-width: 220px;
-    height: 90%;
-
-    margin: 5%;
-
-    border-radius: 5px;
+    max-width: 300px;
+    height: 85%;
+    margin: 0 8px;
+    border-radius: 15px;
     box-sizing: border-box;
     background: #fff;
-    box-shadow: 0 8px 10px 5px rgba(0, 0, 0, 0.2);
-    text-align: center;
-
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 12px 8px;
+    position: relative;
 }
 
 .imgenMasVendido{
-    margin: auto;
-    width: 130px;
-
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    margin: 8px 0;
 }
-.nombreMasVendido{
 
-    font-size: 18px;
+.nombreMasVendido{
+    font-size: 15px;
     font-weight: bold;
     color: var(--bright-red-hue);
+    margin: 6px 0;
+    text-align: center;
 }
 
 .precioMasVendido{
-
-    /*tamaño*/
-    margin-top: 10px;    
     font-weight: bold;
-    font-size: 18px;
-    
+    font-size: 16px;
+    margin: 6px 0;
+    color: #333;
 }
 
 .totalDeVentas{
-    /*tamaño y color de letra*/
-    font-size: 18px;
+    font-size: 15px;
     font-weight: bold;
-    
-    /*margin*/
-    margin-top: 0px;
-    margin-bottom: 10px;
-
-    
-    
+    color: #555;
+    margin: 6px 0 12px;
 }
 
 .btnInformacionMasVendidos{
-
-    /*color*/
-    color: #fff;
-    background: #3870ff;
-    
-    /*bordes*/
+    margin-top: auto;
+    width: 80%;
+    padding: 8px 12px;
     border: none;
-    border-radius: 10px;
-    /*Tamaño del boton*/
-    height: 29%; 
-    width: 60%;
-    /*centrado*/
-    margin: auto;
-    padding: 10px;
-    /*cursor*/    
+    border-radius: 5px;
+    background: #3870ff;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
     cursor: pointer;
+    transition: background 0.2s;
+}
 
+.btnInformacionMasVendidos:hover{
+    background: #2a5bd7;
 }
 
 .masVendidoCoronaIcono{
-
-    font-size: 45px;
     position: absolute;
-    top: -15%;
-    left: -10%;
+    top: -15px;
+    left: -10px;
+    font-size: 40px;
     display: none;
-
+    z-index: 1;
 }
 
+/* Estilo para la tarjeta top */
+.top1 .masVendidoCoronaIcono{
+    display: block;
+}
 
 /* --------- Laptop (1024px) --------- */
 @media (max-width: 1024px) {

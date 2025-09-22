@@ -1,10 +1,9 @@
-// Esta configuración será actualizada por el script de Python
+// Configuración de red actualizada automáticamente
 const networkConfig = {
-    serverUrl: 'http://192.168.0.112:3000' // Valor por defecto, será actualizado
+    serverUrl: 'http://10.218.33.59:3000'
 };
 
 export const getNetworkConfig = () => networkConfig;
-
 export const updateNetworkConfig = (newConfig) => {
     Object.assign(networkConfig, newConfig);
 };

@@ -8,92 +8,61 @@
     
 }
 
-
-.frameIzquerdoInicio{
-
-    width: 100%;
-    max-height: 100%;
-    
-  
-
-    display: grid;
-    grid-template-rows: auto 1fr;
+.tituloframe{
+    margin: auto;
+    width: 80%;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.frameResumenes{
+
+.framepedidos{
+
+    width: 90%;
+    
+    margin: auto;
+    margin-top: 3.5rem;
+    margin-bottom: 20px;
+
+    border-radius: 5px;
+    padding: 10px;
+
+    background: #fff;
+    box-shadow: 0 0 7px 1px #1112;
+
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    
+
+}
+.scrollframePedidos {
+    width: 100%;
+    height: 85%;
+    background: #eee;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+/**/
+
+.frameMesas{
 
     width: 90%;
     margin: auto;
     margin-top: 20px;
-
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 20px;
-
-    
-
-}
-
-
-
-
-.FramePedidos{
-
-    width: 90%;
-    height: 350px;
+    margin-bottom: 20px;
     border-radius: 5px;
-    margin: auto;
-    margin-bottom: 30px;
     padding: 10px;
     box-sizing: border-box;
     background: #fff;
-
+    box-shadow: 0 0 7px 1px #1112;
 }
-
-.FramePedidos h2{
-
-    margin: auto;
-    width: 80%;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 10px;
-
-}
-
-.scrollframePedidos{
-
-    width: 100%;
-    height: 85%;
-
-    background: #eee;
-    overflow-x: auto;
-    scrollbar-width:thin;
-    display: flex;
-    gap: 10px;
-    padding: 20px;
-    box-sizing: border-box;
-
-
-}
-.tituloResumen{
-    margin: auto;
-    width: 80%;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.tituloMesas{
-
-    margin: auto;
-    
-    width: 80%;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 10px;
-
-}
-
 .scrollFrameMesas{
 
     width: 100%;
@@ -116,77 +85,43 @@
     scrollbar-width: none;
 
 }
-.frameMesas{
 
+/**/
+.FrameMasVendidos{
     width: 90%;
+
     margin: auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    padding: 10px;
-    box-sizing: border-box;
-    background: #fff;
-    box-shadow: 0 0 7px 1px #1112;
-}
-
-.frameResumen{
-
-    width: 100%;
-    height: 300px;
-    
-    border-radius: 5px;
-    padding: 10px;
-    
-    box-sizing: border-box;
     margin-top: 10px;
-    
-    background: #fff;
+    margin-bottom: 20px;
 
+    border-radius: 5px;
+    padding: 10px;
+
+    background: #fff;
     box-shadow: 0 0 7px 1px #1112;
 
     display: flex;
     flex-direction: column;
-
     box-sizing: border-box;
     
-
 }
 
-.scrollframeMasVendidos{
-    
-
+.scrollframeMasVendidos {
     width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-columns: auto auto auto;
-    
-    
+    height: 85%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 20px;
     box-sizing: border-box;
     background: #eee;
-
-}
-.scrollFrameRecienAgregado{
-    flex-grow: 1;
-    width: 100%;
-    max-height: 100%;
-    background: #eee;
-    padding:20px 0 20px 0;
-    box-sizing: border-box;
-    
-
-    overflow-y: auto;
-
+    overflow-x: auto;
+    scrollbar-width: thin;
+    border-radius: 5px;
 }
 
-#productosRecienAgregados{
-
-    width: 450px;
-    
-    
-
-}
-
-
+/**/
 
 @media (max-width : 768px){
 
@@ -202,26 +137,22 @@
 .frameResumenes{
     display:inline-flex;
     flex-direction:row;
-    width: 67%;              /* ocupar casi todo y centrado */
-    margin: 20px auto;       /* centrado horizontal con margen superior */
+    width: 67%;              
+    margin: 20px auto;       
     padding: 5px;
-    justify-content: center; /* centrar tarjetas hijas */
+    justify-content: center; 
     }
 
-    /* --- Ajustar ancho de cada tarjeta resumen (Mas Vendidos, Pedidos, Recien Agregados) --- */
-  .frameResumen {
-      width: 60%;          /* que coincida con el ancho del frame de Mesas */
+  .framepedidos {
+      width: 100%;      
+      
+  }
+
+  .scrollframeMasVendidos{
       max-width: 100%;
   }
 
-  /* Carrusel/scroll interior centrado y ocupando todo el ancho */
-  .scrollframeMasVendidos,
-  .scrollFrameRecienAgregado{
-      max-width: 100%;
-  }
 
-  /* Contenedor de productos recién agregados: quitar ancho fijo */
-  #productosRecienAgregados{ width: 100%; }
 
     .scrollframeMasVendidos{
         overflow-x: auto;
@@ -232,26 +163,36 @@
        
     }
 
+
+
     .scrollFrameMesas{
 
         grid-template-columns:  repeat(auto-fill,150px);
 
     }
 
-   .scrollFrameRecienAgregado{
-
-    
-    width: 100%;
-    background: #eee;
-    padding:5px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    
-   } 
-
+ 
 }
 
 @media (max-width : 1024px){
+
+
+.framepedidos{
+    width: 100%;
+}
+    
+
+.frameResumenes {
+    display: block;
+    width: 90%;
+    margin: 20px auto;
+    padding: 5px;
+}
+
+.frameResumen#productosMasVendidos {
+    width: 100%;
+    margin: 0 auto;
+}
 .scrollframeMasVendidos{
     overflow-x: auto;
     display: flex;
@@ -260,13 +201,4 @@
     
     
 }
-.frameResumenes{
-    display:inline-flex;
-    flex-direction:row;
-    width: 67%;              /* ocupar casi todo y centrado */
-    margin: 20px auto;       /* centrado horizontal con margen superior */
-    padding: 5px;
-    justify-content: center; /* centrar tarjetas hijas */
-    }
-
 }

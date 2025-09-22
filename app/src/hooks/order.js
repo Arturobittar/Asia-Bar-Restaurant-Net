@@ -1,6 +1,10 @@
 import { useState, useEffect, useMemo, useContext, useRef } from 'react';
+import { useNavigate } from "react-router-dom";
 
-import { getDishData } from '../utils/api.js';
+import { useFormFields } from './form.js';
+
+import { getDishData, onCreate, findClient } from '../utils/api.js';
+import { successAlert } from "../utils/alerts.js";
 
 import OrderContext from '../context/order.js';
 import Order from '../utils/order.js';
@@ -26,15 +30,92 @@ export function useOrderClearer() {
     return () => setNewInfo();
 };
 
-export function useOrderInfoChanger(clientID, clientName, type, address) {
+export function useOrderDetailsChanger() {
     const { order, setOrder } = useContext(OrderContext);
 
-    const setNewInfo = async () => {
+    const setNewDetails = async (clientID, clientName, type, address) => {
         const newOrder = await new Order(clientID, clientName, type, address, order.products, order.note); 
         await setOrder(newOrder);
     };
     
-    return () => setNewInfo();
+    return setNewDetails;
+}
+
+export function useNewClientFormFields(clientID) {
+    const [values, setters] = useFormFields(3);
+    
+    const getData = () => {
+        return {
+            iddocument: clientID,
+            name: values[0],
+            address: values[1],
+            phone: values[2]
+        }
+    }
+
+    return [values, setters, getData];
+}
+
+export function useOnDetailsSubmit() {
+    const clearer = useOrderClearer();
+
+    useEffect(() => {
+        clearer();
+    }, []);
+
+    const navigate = useNavigate();
+    const detailsChanger = useOrderDetailsChanger();
+
+    return (e, isNewClient, getNewClientInfo, getOrderDetails, route) => {
+        e.preventDefault();
+
+        if (isNewClient)
+            onCreate(
+                e, 
+                "clients", 
+                getNewClientInfo, 
+                () => successAlert("Cliente Agregado", "Los datos del cliente han sido correctamente registrados en el sistema")
+            );
+
+        const details = getOrderDetails();
+
+        detailsChanger(details.clientID, details.clientName, details.type, details.address);
+
+        navigate(route);
+    } 
+}
+
+export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address) {
+    const clientName = isNewClient ? newName : foundName;
+
+    return () => { 
+        return {
+            clientID: clientID,
+            clientName: clientName, 
+            type: type,
+            address: address
+        }
+    };
+}
+
+export function useClientFetchData(clientId) {
+    const [foundClient, setFoundClient] = useState([]);
+
+    const isNewClient = foundClient.length === 0;
+    const foundName = isNewClient ? "" : foundClient[1];
+    
+    useEffect(() => {
+
+        const fetchClient = async () => {
+            const found = await findClient(clientId);
+            setFoundClient(found);
+        };
+
+        fetchClient();
+
+    }, [clientId]);
+
+    return [isNewClient, foundName];
 }
 
 export function useCategory() {

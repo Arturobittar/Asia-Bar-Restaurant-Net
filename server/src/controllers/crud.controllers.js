@@ -2,13 +2,14 @@ import handleQueryExecution from '../libs/handleQueryExecution.js';
 import Table from '../libs/table.js'; 
 import { sendAllRegistersFrom, sendFromId, createRegister, deleteById, updateById, search } from '../libs/crudOperations.js';
 
+const dishFields = ["Name", "Availability", "Price", "Description"];
+
 const tables = [
     new Table("Users", "Username", ["Username", "Type", "Password"]),
     new Table("Clients", "IdDocument", ["IdDocument", "Address", "Name", "Phone"]),
-    new Table("Sales", "ID", ["ID", "ClientIdDocument", "Type", "Total" ]),
-    new Table("MainDish", "Name", ["Name", "Availability", "Price", "Category", "Description"]),
-    new Table("SideDish", "Name", ["Name", "Availability", "Price", "Category", "Description"]),
-    new Table("Product", "Name", ["Name", "Availability", "Price", "Category", "Description"]),
+    new Table("MainDish", "Name", dishFields),
+    new Table("SideDish", "Name", dishFields),
+    new Table("Product", "Name", dishFields),
     new Table("Deliverymen", "Name", ["Name", "Area", "Availability", "Phone"])
 ];
 

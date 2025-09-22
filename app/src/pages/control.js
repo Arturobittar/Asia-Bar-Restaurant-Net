@@ -1,4 +1,4 @@
-import TablePage from "../components/features/table-page.js";
+import TablePage from "../components/features/table/table-page.js";
 import useTable from "../hooks/useTable.js";
 import { useTableData, useActionButtons, useHeaderButtons } from "../hooks/control.js";
 

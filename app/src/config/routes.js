@@ -8,6 +8,8 @@ export const names = [
     'Confirmacion Venta',
     'Control',
     'Formulario de Control',
+    'Control de Ventas',
+    'Edicion de Venta',
 ];
 
 export const routes = Object.fromEntries(
