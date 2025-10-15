@@ -90,7 +90,9 @@
     "vary": "^1.1.2"
   },
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "setup": "cd .. && python configuracionIP.py",
+    "start": "nodemon src/index.js",
+    "dev": "npm run setup && npm start"
   },
   "keywords": [],
   "author": "",

@@ -1,16 +1,4 @@
 {
-  "name": "asia-bar-restaurant",
-  "version": "1.0.0",
-  "description": "Sistema de gestión para Asia Bar Restaurant",
-  "main": "index.js",
-  "scripts": {
-    "start": "node server/src/index.js",
-    "server": "C:/Users/Arturo Bittar/AppData/Local/Programs/Python/Python313/python.exe configuracionIP.py && nodemon server/src/index.js",
-    "client": "cd app && npm start",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
-
-
-  },
   "dependencies": {
     "concurrently": "^9.2.1",
     "qrcode.react": "^4.2.0"
