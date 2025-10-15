@@ -8,8 +8,9 @@ import cors from 'cors';
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:3000', 
+  'http://localhost:3000',
   'http://127.0.0.1:3000',
+  'http://10.193.66.59:3000'
 ];
 
 app.use(cors({
