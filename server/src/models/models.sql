@@ -1,5 +1,9 @@
 DROP DATABASE IF EXISTS AsiaBarRestaurant;
+
+-- Luego la creamos
 CREATE DATABASE AsiaBarRestaurant;
+
+-- Seleccionamos la base de datos
 USE AsiaBarRestaurant;
 
 CREATE TABLE Users (
