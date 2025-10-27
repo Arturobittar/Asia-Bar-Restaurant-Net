@@ -63,6 +63,17 @@ export const getRegisterData = async function(tableName, id) {
     return data;
 }
 
+export const getSaleDetails = async function(id) {
+    let data = null;
+
+    await api_fetch({
+        endpoint: `sales/details/${id}`,
+        method: 'GET',
+    }).then(res => { data = res; })
+
+    return data;
+}
+
 export const getTableData = async function(tableName, searchQuery = null) {
     let data = [];
 
@@ -215,6 +226,26 @@ export const findClient = async function(id) {
     })
 
     return found;
+}
+
+export const updateClientAddress = async function(clientId, clientName, address, phone) {
+    try {
+        await api_fetch({
+            endpoint: `clients/${clientId}`,
+            method: 'PUT',
+            body: {
+                iddocument: clientId,
+                name: clientName,
+                address: address,
+                phone: phone || ''
+            }
+        });
+        console.log(`Dirección actualizada para cliente ${clientId}: ${address}`);
+        return true;
+    } catch (error) {
+        console.error('Error al actualizar dirección del cliente:', error);
+        return false;
+    }
 }
 
 

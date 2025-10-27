@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useFormFields, usePairs } from './form.js';
 
-import { getTableData, getRegisterData, onDelete, onUpdateSale } from '../utils/api.js';
+import { getTableData, getRegisterData, getSaleDetails, onDelete, onUpdateSale } from '../utils/api.js';
 import { successAlert, saleAlert } from '../utils/alerts.js';
 import { printOrderTicket } from '../utils/ticket.js';
 
@@ -26,17 +26,27 @@ export function useSaleID() {
 export function useEditSaleFormFields() {
     const id = useSaleID(); 
     const saleProducts = usePairs();
-    const [values, setters] = useFormFields(3);
+    const [values, setters] = useFormFields(5); // Aumentado a 5: ClientId, ClientName, Type, Address, DeliverymanName
 
     let areProductsInitialized = false;
 
     useEffect(() => {
         const getValues = async () => {
-            const fetched = await getRegisterData('sales/details', id); 
+            const fetched = await getSaleDetails(id);
+            
+            if (!fetched) {
+                console.error("No se pudieron cargar los datos de la venta");
+                return;
+            }
 
-            setters.forEach((setter, i) => setter(fetched[i + 1]));
+            // Setear valores del formulario: ClientIdDocument, ClientName, Type, Address, DeliverymanName
+            setters[0](fetched.ClientIdDocument);
+            setters[1](fetched.ClientName);
+            setters[2](fetched.Type);
+            setters[3](fetched.Address || '');
+            setters[4](fetched.DeliverymanName || '');
 
-            const products = fetched[4];
+            const products = Array.isArray(fetched.products) ? fetched.products : [];
 
             const productsArray = [];
 
@@ -62,7 +72,7 @@ export function useEditSaleFormFields() {
     return [values, setters, saleProducts, onAddProduct, onDeleteProduct];
 }
 
-export function useOnEditContinue(id, client, type, products) {
+export function useOnEditContinue(id, client, type, address, deliverymanName, products) {
     const navigate = useNavigate();
 
     const productsArray = products.reduce((array, { value }) => [...array, {
@@ -76,6 +86,8 @@ export function useOnEditContinue(id, client, type, products) {
         clientId: client.id,
         clientName: client.name,
         type: type,
+        address: address || null,
+        deliverymanName: deliverymanName || null,
         products: productsArray || []
     };
 
@@ -127,13 +139,18 @@ export function useActionButtons() {
     const onInfo = (id) => {
         
         const loadAndshowAlert = async () => {
-            const fetched = await getRegisterData('sales/details', id); 
+            const fetched = await getSaleDetails(id);
+            
+            if (!fetched) {
+                return;
+            }
+            
             const client = {
-                id: fetched[1],
-                name: fetched[2]
+                id: fetched.ClientIdDocument,
+                name: fetched.ClientName
             };
             
-            const products = fetched[4];
+            const products = Array.isArray(fetched.products) ? fetched.products : [];
 
             const productsArray = [];
 
@@ -144,10 +161,13 @@ export function useActionButtons() {
             ]));
 
             saleAlert(
-                fetched[0],
+                fetched.ID,
                 client,
-                fetched[3],
-                productsArray
+                fetched.Type,
+                productsArray,
+                fetched.DeliverymanName || null,
+                fetched.Address || null,
+                fetched.Note || null
             );
         };
 
@@ -169,27 +189,34 @@ export function useActionButtons() {
     const onTicket = (id) => {
 
         const print = async () => {
-            const fetched = await getRegisterData('sales/details', id); 
+            const fetched = await getSaleDetails(id);
+            
+            if (!fetched) {
+                console.error("No se pudieron cargar los datos de la venta");
+                return;
+            }
             
             const client = {
-                id: fetched[1],
-                name: fetched[2]
+                id: fetched.ClientIdDocument,
+                name: fetched.ClientName
             };
             
-            const products = fetched[4];
+            const products = Array.isArray(fetched.products) ? fetched.products : [];
 
             const productsArray = [];
 
             products.forEach((product) => productsArray.push({
                 nombre: product.Name, 
                 cantidad: product.Quantity,
-                precio: product.Quantity * product.Price,
-                precioUnitario: product.Price 
+                precio: product.Price  // Precio unitario, no total
             }));
 
-            printOrderTicket({
-                id: id,
-                type: fetched[3],
+            await printOrderTicket({
+                id: fetched.ID,
+                type: fetched.Type,
+                address: fetched.Address || null,
+                note: fetched.Note || null,
+                deliverymanName: fetched.DeliverymanName || null,
                 client: client,
                 products: productsArray
             });

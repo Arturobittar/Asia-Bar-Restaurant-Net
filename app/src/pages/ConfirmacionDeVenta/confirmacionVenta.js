@@ -39,6 +39,8 @@ function ContenidoConfirmacionVenta() {
                     clientId: order.clientID,
                     clientName: order.clientName,
                     type: order.type,
+                    deliverymanName: order.deliverymanName,
+                    note: order.note,
                     products: productsArray
                 }, () => {} ); 
                 orderClearer();
@@ -63,6 +65,7 @@ function ContenidoConfirmacionVenta() {
             id: id,
             type: order.type,
             address: order.address,
+            deliverymanName: order.deliverymanName,
             note: order.note,
             client: {
                 id: order.clientID,
@@ -75,12 +78,11 @@ function ContenidoConfirmacionVenta() {
             products: products.map(product => ({
                 nombre: product[0], 
                 cantidad: product[3],
-                precio: product[1] * product[3],
-                precioUnitario: product[1] 
+                precio: product[1]  // Precio unitario, no total
             })),
         };
 
-        printOrderTicket(data, () => afterPrintDialog(id)); 
+        await printOrderTicket(data, () => afterPrintDialog(id)); 
     };
 
     const navegar = useNavigate()

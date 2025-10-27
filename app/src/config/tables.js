@@ -47,6 +47,6 @@ export const tables = [
     new Table("Contornos", "side-dish", dishFields, dishDbFields),
     new Table("Productos","product", dishFields, dishDbFields),
     new Table("Repartidores","deliverymen", deliverymenFields, deliverymenDbFields),
-    new Table("Usuarios","users", usersFields, usersDbFields),
+    new Table("Usuarios","users", usersFields, usersDbFields)
 ];
 

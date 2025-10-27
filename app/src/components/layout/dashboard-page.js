@@ -5,6 +5,9 @@ import { dashboardItems } from '../../config/dashboard-items.js';
 
 import Dashboard from "../../components/features/dashboard/dashboard.js";
 
+import "../layout/form.css";
+import "../ui/buttons.css";
+
 const DashboardPage = ({ children }) => {
     const [isOpen, setOpenStatus] = useState(false);
     const [expandedIndex, setExpandedIndex] = useState(null);
@@ -19,19 +22,21 @@ const DashboardPage = ({ children }) => {
     ]  = useDashboardFunctions(isOpen, setOpenStatus, expandedIndex, setExpandedIndex);
 
     return (
-        <Dashboard
-            isOpen={isOpen}
-            onToggle={onToggle}
-            onSidebarClick={onSidebarClick}
-            onMenuItemClick={onMainItem}
-            onMenuItemSubClick={onSubItem}
-            onMainClick={onMainClick}
-            onQuit={onQuit}
-            dashboardItems={dashboardItems}
-            expandedIndex={expandedIndex}
-        >
-            {children}
-        </Dashboard>
+        <>
+            <Dashboard
+                isOpen={isOpen}
+                onToggle={onToggle}
+                onSidebarClick={onSidebarClick}
+                onMenuItemClick={onMainItem}
+                onMenuItemSubClick={onSubItem}
+                onMainClick={onMainClick}
+                onQuit={onQuit}
+                dashboardItems={dashboardItems}
+                expandedIndex={expandedIndex}
+            >
+                {children}
+            </Dashboard>
+        </>
     );
 };
 

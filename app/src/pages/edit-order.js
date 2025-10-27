@@ -23,13 +23,25 @@ function EditOrder() {
         name: values[1]
     };
 
-    const onContinue = useOnEditContinue(id, client, values[2], products);
+    const type = values[2];
+    const address = values[3];
+    const deliverymanName = values[4];
+    const isDelivery = type === saleOptions[2]; // "Delivery" es la tercera opción
+
+    const onContinue = useOnEditContinue(id, client, type, address, deliverymanName, products);
 
     return (
         <ControlForm title={`Venta N°${id}`} backRoute={routes['Control de Ventas']} onSubmit={onContinue} > 
             <RequiredInput type="id" title="Identificación del Cliente" onChange={setters[0]} value={values[0]} /> 
             <RequiredInput type="text" title="Nombre del Cliente" onChange={setters[1]} value={values[1]} /> 
             <RequiredInput type="combo" title="Tipo de Venta" onChange={setters[2]} value={values[2]} options={ saleOptions } /> 
+            
+            {isDelivery && (
+                <>
+                    <RequiredInput type="text" title="Dirección" onChange={setters[3]} value={address} />
+                    <RequiredInput type="text" title="Nombre del Repartidor" onChange={setters[4]} value={deliverymanName} />
+                </>
+            )}
         
             <EditProductsSection 
                 products={products} 

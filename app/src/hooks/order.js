@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useFormFields } from './form.js';
 
-import { getDishData, onCreate, findClient } from '../utils/api.js';
+import { getDishData, onCreate, findClient, updateClientAddress } from '../utils/api.js';
 import { successAlert } from "../utils/alerts.js";
 
 import OrderContext from '../context/order.js';
@@ -33,8 +33,8 @@ export function useOrderClearer() {
 export function useOrderDetailsChanger() {
     const { order, setOrder } = useContext(OrderContext);
 
-    const setNewDetails = async (clientID, clientName, type, address) => {
-        const newOrder = await new Order(clientID, clientName, type, address, order.products, order.note); 
+    const setNewDetails = async (clientID, clientName, type, address, deliverymanName) => {
+        const newOrder = await new Order(clientID, clientName, type, address, deliverymanName, order.products, order.note); 
         await setOrder(newOrder);
     };
     
@@ -66,26 +66,31 @@ export function useOnDetailsSubmit() {
     const navigate = useNavigate();
     const detailsChanger = useOrderDetailsChanger();
 
-    return (e, isNewClient, getNewClientInfo, getOrderDetails, route) => {
+    return async (e, isNewClient, getNewClientInfo, getOrderDetails, route) => {
         e.preventDefault();
 
-        if (isNewClient)
+        const details = getOrderDetails();
+
+        if (isNewClient) {
+            // Si es cliente nuevo, crearlo con todos sus datos
             onCreate(
                 e, 
                 "clients", 
                 getNewClientInfo, 
                 () => successAlert("Cliente Agregado", "Los datos del cliente han sido correctamente registrados en el sistema")
             );
+        } else if (details.type === "Delivery" && details.address) {
+            // Si el cliente ya existe y es Delivery, actualizar su dirección
+            await updateClientAddress(details.clientID, details.clientName, details.address, '');
+        }
 
-        const details = getOrderDetails();
-
-        detailsChanger(details.clientID, details.clientName, details.type, details.address);
+        detailsChanger(details.clientID, details.clientName, details.type, details.address, details.deliverymanName);
 
         navigate(route);
     } 
 }
 
-export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address) {
+export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliverymanName) {
     const clientName = isNewClient ? newName : foundName;
 
     return () => { 
@@ -93,7 +98,8 @@ export function useDetailsGetter(clientID, isNewClient, newName, foundName, type
             clientID: clientID,
             clientName: clientName, 
             type: type,
-            address: address
+            address: address,
+            deliverymanName: deliverymanName
         }
     };
 }
@@ -103,6 +109,7 @@ export function useClientFetchData(clientId) {
 
     const isNewClient = foundClient.length === 0;
     const foundName = isNewClient ? "" : foundClient[1];
+    const foundAddress = isNewClient ? "" : foundClient[2];
     
     useEffect(() => {
 
@@ -115,7 +122,7 @@ export function useClientFetchData(clientId) {
 
     }, [clientId]);
 
-    return [isNewClient, foundName];
+    return [isNewClient, foundName, foundAddress];
 }
 
 export function useCategory() {
@@ -202,7 +209,7 @@ export function useOrderChanger(products, note) {
     const { order, setOrder } = useContext(OrderContext);
 
     const setNewInfo = async () => {
-        const newOrder = await new Order(order.clientID, order.clientName, order.type, order.address, products, note); 
+        const newOrder = await new Order(order.clientID, order.clientName, order.type, order.address, order.deliverymanName, products, note); 
         await setOrder(newOrder);
     };
     

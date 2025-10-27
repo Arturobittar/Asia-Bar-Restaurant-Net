@@ -1,4 +1,4 @@
-import react, { useState, useEffect } from "react";
+ import react, { useState, useEffect } from "react";
 import DashboardPage from "../../components/layout/dashboard-page.js";
 import "./Inicio.css"
 import { ModalInformacionDelProducto, ModalInicio, InformacionDelProductoModal } from "./modalesInicio";
@@ -7,9 +7,10 @@ import { Mesa, RecienAgregado, MasVendidos, PedidoTicket } from "./widgetsInicio
 
 import { useTicketPrinter } from '../../hooks/home.js';
 
-import { getTopProducts, getTableData, getRegisterData } from '../../utils/api.js';
+import { getTopProducts, getTableData, getRegisterData, getSaleDetails } from '../../utils/api.js';
 
 import { saleAlert } from '../../utils/alerts.js';
+import { errorAlert } from "../../utils/alerts";
 
 function Inicio(){
 
@@ -55,29 +56,58 @@ function Inicio(){
                                     mostRecentProducts.map((product) => {
 
                                         const showAlert = async () => {
-                                            const fetched = await getRegisterData(`sales/details`, product[0]);
+                                            try {
+                                                console.log("Obteniendo detalles de la venta ID:", product[0]);
+                                                const fetched = await getSaleDetails(product[0]);
+                                                console.log("Respuesta del servidor:", fetched);
 
-                                            const client = {
-                                                id: fetched[1],
-                                                name: fetched[2]
-                                            };
+                                                if (!fetched) {
+                                                    throw new Error("No se recibieron datos de la venta");
+                                                }
+
+                                                // Verificar que los datos necesarios existan
+                                                if (!fetched.ClientIdDocument || !fetched.ClientName || !fetched.products) {
+                                                    console.error("Datos incompletos en la respuesta:", {
+                                                        hasClientId: !!fetched.ClientIdDocument,
+                                                        hasClientName: !!fetched.ClientName,
+                                                        hasProducts: !!fetched.products,
+                                                        response: fetched
+                                                    });
+                                                    throw new Error("Datos incompletos en la respuesta del servidor");
+                                                }
+
+                                                const client = {
+                                                    id: fetched.ClientIdDocument,
+                                                    name: fetched.ClientName
+                                                };
+        
+                                                // Asegurarse de que products sea un array
+                                                const products = Array.isArray(fetched.products) ? fetched.products : [];
+                                                console.log("Productos recibidos:", products);
                                             
-                                            const products = fetched[4];
+                                                const productsArray = products.map((p) => [
+                                                    p.Name || 'Sin nombre', 
+                                                    Number.parseFloat(p.Price || 0).toFixed(2),
+                                                    p.Quantity || 0
+                                                ]);
 
-                                            const productsArray = [];
-
-                                            products.map((product) => productsArray.push([
-                                                product.Name, 
-                                                Number.parseFloat(product.Price).toFixed(2),
-                                                product.Quantity
-                                            ]));
-
-                                            saleAlert(
-                                                fetched[0],
-                                                client,
-                                                fetched[3],
-                                                productsArray
-                                            );
+                                                saleAlert(
+                                                    fetched.ID || 'N/A',
+                                                    client,
+                                                    fetched.Type || 'No especificado',
+                                                    productsArray,
+                                                    fetched.DeliverymanName || null,
+                                                    fetched.Address || null,
+                                                    fetched.Note || null
+                                                );
+                                            } catch (error) {
+                                                console.error("Error detallado:", {
+                                                    error: error.message,
+                                                    stack: error.stack,
+                                                    product: product[0]
+                                                });
+                                                errorAlert("Error", `No se pudieron cargar los detalles de la venta: ${error.message}`);
+                                            }
                                         };
 
                                         return (

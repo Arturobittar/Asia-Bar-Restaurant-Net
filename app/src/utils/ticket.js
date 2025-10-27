@@ -3,12 +3,13 @@ import PrintManager from './print-manager.js';
 
 import './ticket.css';
 
-export function printOrderTicket({ id, type, address, note, client, clock, products }, afterPrint = () => {}) {
-    const ticket = generateTicket({
+export async function printOrderTicket({ id, type, address, note, deliverymanName, client, clock, products }, afterPrint = () => {}) {
+    const ticket = await generateTicket({
         numeroTicket: id,
         tipoVenta: type,
         direccion: address,
-        mensaje: note || '¡Gracias por su preferencia!',
+        deliverymanName: deliverymanName,
+        mensaje: note || '',
         clienteId: client.id,
         clienteNombre: client.name,
         fecha: clock ? clock.date : null,

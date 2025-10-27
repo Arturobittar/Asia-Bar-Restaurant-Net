@@ -47,7 +47,7 @@ const dividirEnLineas = (texto, maxCaracteres) => {
   return lineas;
 };
 
-export const generateTicket = (datos) => {
+export const generateTicket = async (datos) => {
   // Caracteres máximos por línea (para impresora de 58mm)
   const MAX_CHARS = 32;
   
@@ -66,6 +66,16 @@ export const generateTicket = (datos) => {
       return ' '.repeat(espacios) + linea;
     }).join('\n');
   };
+
+  const justificartexto = (texto) => {
+    if (!texto) return '';
+    const lineas = dividirEnLineas(texto, MAX_CHARS);
+    return lineas.map(linea => {
+      const espacios = Math.max(0, Math.floor((MAX_CHARS - linea.length) / 2));
+      return ' '.repeat(espacios) + linea;
+    }).join('\n');
+  };
+  
 
   // Función para alinear a los lados
   const alinearLados = (izquierda, derecha) => {
@@ -113,20 +123,32 @@ export const generateTicket = (datos) => {
   const lineaDivisoria = (caracter = '-') => caracter.repeat(MAX_CHARS);
   
   // Iniciar el ticket
-  let ticket = [];
-  
+  let ticket = [ '', '' ];
+  ticket.push(''); // Línea en blanco
   // Encabezado de la empresa
-  ticket.push(centrarTexto('RESTAURANTE ASIA'));
+  ticket.push(centrarTexto('Bar Restaurant Asia'));
   ticket.push(''); // Línea en blanco
   
   // Línea divisoria superior
   ticket.push(lineaDivisoria('*'));
   
-  // Información del ticket
-  ticket.push(alinearLados(`Ticket #${datos.numeroTicket || '0000'}`, datos.fecha || ''));
-  ticket.push(alinearLados(`${datos.hora || ''}`, ''));
+if (datos.numeroTicket){
+    ticket.push(`Número de orden: #${datos.numeroTicket}`);
+ }
+// Mostrar información del cliente si está disponible
+  if (datos.clienteNombre || datos.clienteId) {
+    if (datos.clienteId) {
+      ticket.push(`Identificación: ${datos.clienteId}`);
+    
+    }
+    if (datos.clienteNombre) {
+      ticket.push(`Cliente: ${datos.clienteNombre}`);
+    }
+  }
+
+ 
   
-  // Mostrar número de mesa solo si el tipo de venta es "Para comer aquí" o "Delivery"
+ // Mostrar número de mesa solo si el tipo de venta es "Para comer aquí" o "Delivery"
   const esParaComerAqui = datos.tipoVenta && 
     (datos.tipoVenta.toLowerCase().includes('comer') || 
      datos.tipoVenta.toLowerCase().includes('aquí'));
@@ -141,30 +163,27 @@ export const generateTicket = (datos) => {
     ticket.push(`Mesa: ${datos.mesa || ''}`);
   } else if (esDelivery && datos.direccion) {
     // Mostrar dirección para delivery en la misma línea
-    const lineaDireccion = `Dirección: ${datos.direccion}`;
+
+// Mostrar repartidor si existe
+    if (datos.deliverymanName) {
+      ticket.push(`Repartidor: ${datos.deliverymanName}`);
+    }
+  }
+    const lineaDireccion = (`Dirección: ${datos.direccion}`);
     const lineasDireccion = dividirEnLineas(lineaDireccion, MAX_CHARS);
     
     // Agregar cada línea de la dirección
     lineasDireccion.forEach(linea => {
       ticket.push(linea);
     });
-  }
-
-  // Mostrar información del cliente si está disponible
-  if (datos.clienteNombre || datos.clienteId) {
     
-    if (datos.clienteNombre) {
-      ticket.push(`Cliente: ${datos.clienteNombre}`);
-    }
-    if (datos.clienteId) {
-      ticket.push(`Identificación: ${datos.clienteId}`);
-    }
-  }
+    
+
   
+  ticket.push('');
   ticket.push(lineaDivisoria('*'));
   
-  // Línea en blanco antes de los productos
-  ticket.push('');
+
   
   // Encabezado de productos con espaciado exacto
   const header = `${'CANT'.padEnd(5)}${'DESCRIPCION'.padEnd(19)}${'TOTAL'.padStart(6)}`;
@@ -193,28 +212,33 @@ export const generateTicket = (datos) => {
   // Línea divisoria antes del total
   ticket.push(lineaDivisoria('-'));
   
+
+ //TOTALES
+
+  // total en dolares
   const total = datos.items.reduce((sum, item) => sum + item.cantidad * item.precio, 0); 
   const totalFormateado = `$ ${total.toFixed(2)}`;
-  ticket.push(alinearLados('TOTAL:', totalFormateado));
+  ticket.push(alinearLados('TOTAL $:', totalFormateado));
   
   // Línea divisoria después del total
   ticket.push(lineaDivisoria('='));
-  
-  // Mensaje final (opcional)
-  if (datos.mensaje) {
-    ticket.push('');
-    // Dividir el mensaje en líneas si es muy largo
-    const lineasMensaje = dividirEnLineas(datos.mensaje, MAX_CHARS);
-    lineasMensaje.forEach(linea => ticket.push(centrarTexto(linea)));
-    ticket.push(''); // Línea en blanco después del mensaje
-  }
-  
-  // Mensaje de agradecimiento
-  ticket.push('');
+ ticket.push('');
  
   
-  // Espacio para cortar el ticket
+  // Mostrar la nota si existe
+  if (datos.mensaje && datos.mensaje) {
+    const lineasMensaje = dividirEnLineas('NOTA: ' + datos.mensaje, MAX_CHARS);
+    lineasMensaje.forEach(linea => ticket.push(centrarTexto(linea)));
+    ticket.push('');  // Línea divisoria después del total
+  }
+
+  ticket.push(centrarTexto('¡Gracias por su preferencia!'));
+  
   ticket.push('');
+  ticket.push(lineaDivisoria('-'));
+  
+ 
+  
   ticket.push('');
   ticket.push('');
   

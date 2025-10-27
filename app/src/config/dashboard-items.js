@@ -25,5 +25,5 @@ export const dashboardItems = [
         title: "Control de Usuarios",
         isForAdminOnly: true,
         subItems: [ new DashboardSubItem('Control', 'Usuarios', 'Control de Usuarios') ] 
-    },
+    }
 ];

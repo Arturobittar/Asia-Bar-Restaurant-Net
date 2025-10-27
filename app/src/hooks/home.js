@@ -1,30 +1,37 @@
-import { getRegisterData } from '../utils/api.js';
+import { getSaleDetails } from '../utils/api.js';
 import { printOrderTicket } from '../utils/ticket.js';
 
 export function useTicketPrinter() {
     const printTicket = (id) => {
         const print = async () => {
-            const fetched = await getRegisterData('sales/details', id); 
+            const fetched = await getSaleDetails(id);
+            
+            if (!fetched) {
+                console.error("No se pudieron cargar los datos de la venta");
+                return;
+            }
             
             const client = {
-                id: fetched[1],
-                name: fetched[2]
+                id: fetched.ClientIdDocument,
+                name: fetched.ClientName
             };
             
-            const products = fetched[4];
+            const products = Array.isArray(fetched.products) ? fetched.products : [];
 
             const productsArray = [];
 
             products.forEach((product) => productsArray.push({
                 nombre: product.Name, 
                 cantidad: product.Quantity,
-                precio: product.Quantity * product.Price,
-                precioUnitario: product.Price 
+                precio: product.Price  // Precio unitario, no total
             }));
 
-            printOrderTicket({
-                id: id,
-                type: fetched[3],
+            await printOrderTicket({
+                id: fetched.ID,
+                type: fetched.Type,
+                address: fetched.Address || null,
+                note: fetched.Note || null,
+                deliverymanName: fetched.DeliverymanName || null,
                 client: client,
                 products: productsArray
             });
