@@ -17,6 +17,7 @@
  * @param {number} datos.total - Total a pagar
  * @returns {string} - Texto formateado para impresión
  */
+import { obtenerTipoCambio } from '../config/tipoCambio';
 
 // Función para dividir texto en líneas según el ancho máximo
 const dividirEnLineas = (texto, maxCaracteres) => {
@@ -219,7 +220,21 @@ if (datos.numeroTicket){
   const total = datos.items.reduce((sum, item) => sum + item.cantidad * item.precio, 0); 
   const totalFormateado = `$ ${total.toFixed(2)}`;
   ticket.push(alinearLados('TOTAL $:', totalFormateado));
-  
+
+  // total en bolívares (obtiene el tipo de cambio desde la BD)
+  try {
+    const tipoCambio = await obtenerTipoCambio();
+    console.log('💵 Tipo de cambio actual:', tipoCambio, 'Bs');
+    
+    const totalBs = datos.items.reduce((acum, item) => 
+      acum + (item.cantidad * item.precio * tipoCambio), 0); 
+    const totalFormateadoBs = `Bs. ${totalBs.toFixed(2)}`;
+    ticket.push(alinearLados('TOTAL Bs:', totalFormateadoBs));
+  } catch (error) {
+    console.error('Error al obtener el tipo de cambio:', error);
+    ticket.push(alinearLados('TOTAL Bs:', 'Error en conversión'));
+  }
+
   // Línea divisoria después del total
   ticket.push(lineaDivisoria('='));
  ticket.push('');

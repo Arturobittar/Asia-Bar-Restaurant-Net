@@ -8,11 +8,7 @@
 }
 
 .frame-form {
-    width: 40%;
-    max-width: 400px;
-    
-    margin: 30px 0px;
-
+    margin-top: 10%;
     background: var(--white-hue);
 
     padding: 40px;

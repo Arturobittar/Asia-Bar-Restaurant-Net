@@ -1,8 +1,7 @@
-
-
 .overlayModalInicio{
 
-    background: #0005;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
     position: absolute;
     left: 0;
     top: 0;
@@ -15,7 +14,7 @@
 
 .modalInicio{
 
-    background: #eee;
+  
     width:  500px;
     margin: auto;
     margin-top: 10dvh;
@@ -31,10 +30,11 @@
 .btnCerrarModal{
 
     font-size: 25px;
-    width: 40px;
+    width: 30px;
     height: 40px;
     border-radius: 50%;
     border: none;
+    background: transparent;
 
     position: absolute;
     right: 20px;
@@ -42,13 +42,14 @@
 
     cursor: pointer;
 
-    color: #555;
+    color: black;
+    transition: all 0.2s ease;
 
 }
 
 .btnCerrarModal:hover{
 
-    
+    background: rgba(255, 0, 0, 0.1);
     color: var(--bright-red-hue);
 
 }

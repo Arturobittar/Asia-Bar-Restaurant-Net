@@ -25,5 +25,12 @@ export const dashboardItems = [
         title: "Control de Usuarios",
         isForAdminOnly: true,
         subItems: [ new DashboardSubItem('Control', 'Usuarios', 'Control de Usuarios') ] 
+    },
+    {
+        title: "Configuración",
+        isForAdminOnly: true,
+        subItems: [ 
+            new DashboardSubItem('Dashboard', 'TipoCambio', 'Dólar BCV', true) 
+        ] 
     }
 ];

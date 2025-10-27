@@ -6,7 +6,7 @@ import { questionAlert } from '../utils/alerts.js';
 
 import { useRolChanger } from './session.js';
 
-export function useDashboardFunctions(isOpen, setOpenStatus, expandedIndex, setExpandedIndex) {
+export function useDashboardFunctions(isOpen, setOpenStatus, expandedIndex, setExpandedIndex, handleOpenTCModal) {
     const navigate = useNavigate();
     const lateTableChanger = useLateTableChanger();
     const rolChanger = useRolChanger();
@@ -26,6 +26,12 @@ export function useDashboardFunctions(isOpen, setOpenStatus, expandedIndex, setE
     const onMainItem = (index) => setExpandedIndex(expandedIndex === index ? null : index);
     
     const onSubItem = (subitem) => {
+        // Si es TipoCambio, abrir el modal en lugar de navegar
+        if (subitem.table === 'TipoCambio') {
+            handleOpenTCModal();
+            return;
+        }
+        
         lateTableChanger(subitem.table); 
         navigate(subitem.route);
     };
