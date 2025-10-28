@@ -1,9 +1,10 @@
+// server/src/routes/tipoCambio.routes.js
 import { Router } from 'express';
 import { obtenerTipoCambio, agregarTipoCambio } from '../controllers/tipoCambio.controller.js';
 
-const tipoCambioRouter = Router();
+const router = Router();
 
-tipoCambioRouter.get('/tipo-cambio', obtenerTipoCambio);
-tipoCambioRouter.post('/tipo-cambio', agregarTipoCambio);
+router.get('/', obtenerTipoCambio);
+router.post('/', agregarTipoCambio);
 
-export default tipoCambioRouter;
+export default router;

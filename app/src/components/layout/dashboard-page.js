@@ -6,7 +6,6 @@ import { guardarTipoCambio } from '../../config/tipoCambio.js';
 
 import Dashboard from "../../components/features/dashboard/dashboard.js";
 import { ModalInicio } from "../../pages/Inicio/modalesInicio.js";
-import { RequiredNumberBox } from "../ui/form.js";
 import { successAlert } from "../../utils/alerts.js";
 
 import "../layout/form.css";
@@ -58,18 +57,55 @@ const DashboardPage = ({ children }) => {
         onQuit
     ]  = useDashboardFunctions(isOpen, setOpenStatus, expandedIndex, setExpandedIndex, handleOpenTCModal);
 
+    // Función para formatear el valor según la secuencia especial
+        const formatearTipoCambio = (input) => {
+        // Remover todo excepto dígitos
+        const digitos = input.replace(/[^0-9]/g, '');
+        
+        if (digitos === '') return '0.00';
+        
+        // Tomar solo los últimos 7 dígitos (para permitir hasta 1 millón)
+        const ultimosDigitos = digitos.slice(-7);
+        const len = ultimosDigitos.length;
+        
+        // Inicializar con ceros: "0000000"
+        let numero = '0000000';
+        
+        // Reemplazar los últimos dígitos con los ingresados
+        numero = numero.slice(0, -len) + ultimosDigitos;
+        
+        // Separar en parte entera (primeros 3 dígitos) y decimal (últimos 2)
+        const parteEntera = parseInt(numero.slice(0, -2), 10).toString();
+        const parteDecimal = numero.slice(-2);
+        
+        return `${parteEntera}.${parteDecimal}`;
+    };
+    
+    const handleTasaChange = (e) => {
+        const valorFormateado = formatearTipoCambio(e.target.value);
+        setTasa(valorFormateado);
+    };
+
     // Contenido del modal de tipo de cambio
     const contenidoTC = (
-        <div className="frame-form modal-tipo-cambio">
+        <div className="frame-formEmergente modal-tipo-cambio">
             <h1>Dolar BCV</h1>
             <hr />
 
-            <RequiredNumberBox 
-                title="Precio dólar (Bs)"
-                isDecimal={true}
-                value={tasa || ""}
-                onChange={(val) => setTasa(val)}
-            />
+            <div className="input-box margined">
+                <label className="input-title" htmlFor="precio-dolar">
+                    Precio dólar (Bs)
+                </label>
+                <input 
+                    className="simple-input"
+                    type="text"
+                    id="precio-dolar"
+                    placeholder="0.00"
+                    value={tasa}
+                    onChange={handleTasaChange}
+                    required
+                />
+            </div>
 
             <div className="buttons">
                 <button type="button" className="go-back-button" onClick={handleCloseTCModal}>Volver</button>

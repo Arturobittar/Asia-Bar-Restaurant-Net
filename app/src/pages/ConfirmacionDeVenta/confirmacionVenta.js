@@ -4,6 +4,8 @@ import './confirmacionVenta.css';
 import { TarjetaProductoInformacionVenta, TarjetaNota, TarjetaDelivery } from './widgetsConfirmacionVenta';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { generarTicket } from '../../utils/ticketImpresion';
+import { printOrderTicket } from '../../utils/ticket.js';
+import { obtenerTipoCambio } from '../../config/tipoCambio';
 
 import { useOrder, useOrderClearer } from "../../hooks/order.js";
 
@@ -11,15 +13,33 @@ import { getLastSaleID, onNewSale } from "../../utils/api.js";
 
 import { questionAlert, successAlert, infoAlert } from "../../utils/alerts.js";
 
-import { printOrderTicket } from '../../utils/ticket.js';
+
 
 function ContenidoConfirmacionVenta() {
     const order = useOrder();
     const orderClearer = useOrderClearer();
+    const [tipoCambio, setTipoCambio] = useState(0);
 
     const products = order.products;
         
     const total = products.reduce((sum, product) => sum + (product[3] * product[1]), 0);
+    const totalBs = total * tipoCambio;
+    
+    // Obtener el tipo de cambio al cargar el componente
+    useEffect(() => {
+        const fetchTipoCambio = async () => {
+            try {
+                const tasa = await obtenerTipoCambio();
+                setTipoCambio(tasa);
+            } catch (error) {
+                console.error('Error al obtener el tipo de cambio:', error);
+                // Si hay un error, mostrar 0 en lugar de romper la interfaz
+                setTipoCambio(0);
+            }
+        };
+        
+        fetchTipoCambio();
+    }, []);
 
     const afterPrintDialog = (id) => {
 
@@ -127,8 +147,10 @@ function ContenidoConfirmacionVenta() {
                 </div>
 
                 <div className='totalVenta'>
-
                     <span className='totalTexto'>Total: ${total.toFixed(2)}</span>
+                    <span className='totalTexto'>Bs.{totalBs.toFixed(2)}</span>
+                   
+                  
 
                 </div>
 

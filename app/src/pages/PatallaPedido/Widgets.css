@@ -298,13 +298,6 @@
         height: 35px;
     }
 
-    #nota{
-
-        height: 50px;
-        bottom: 20px;
-
-    }
-
 }
 
 
@@ -318,15 +311,6 @@
     .pedidoNombre{
 
         font-size: 12px;
-
-    }
-
-    
-
-    #nota{
-
-        height: 40px;
-        width: 100px;
 
     }
 
