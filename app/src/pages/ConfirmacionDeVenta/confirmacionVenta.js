@@ -59,7 +59,9 @@ function ContenidoConfirmacionVenta() {
                     clientId: order.clientID,
                     clientName: order.clientName,
                     type: order.type,
+                    address: order.address,
                     deliverymanName: order.deliverymanName,
+                    tableNumber: order.tableNumber,
                     note: order.note,
                     products: productsArray
                 }, () => {} ); 
@@ -86,6 +88,7 @@ function ContenidoConfirmacionVenta() {
             type: order.type,
             address: order.address,
             deliverymanName: order.deliverymanName,
+            tableNumber: order.tableNumber,
             note: order.note,
             client: {
                 id: order.clientID,

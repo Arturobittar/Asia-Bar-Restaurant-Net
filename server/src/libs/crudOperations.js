@@ -112,10 +112,10 @@ export async function addSale(req, res) {
         const body = req.body;
         const products = body.products;
 
-        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note) VALUES (?, ?, ?, ?, ?, ?)`;
+        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         const productQuery = `INSERT INTO SaleDetails (ID, Name, Price, Quantity) VALUES (?, ?, ?, ?)`;
         
-        const [results, fields] = await db.execute(saleQuery, [body.id, body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null]);
+        const [results, fields] = await db.execute(saleQuery, [body.id, body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null, body.address || null, body.tableNumber || null]);
 
         products.map( async (product) => {
             const [results, fields] = await db.execute(productQuery, [body.id, product.name, product.price, product.quantity]);
@@ -137,14 +137,8 @@ export async function updateSale(req, res) {
         if (detectionResults.length === 0)
             res.status(404).json({message: "No entry with such id"})
 
-        // Actualizar la dirección del cliente si se proporciona
-        if (body.address) {
-            const updateClientQuery = "UPDATE Clients SET Address = ? WHERE IdDocument = ?";
-            await db.execute(updateClientQuery, [body.address, body.clientId]);
-        }
-
-        const updateSaleQuery = "UPDATE Sales SET ClientIdDocument = ?, ClientName = ?, Type = ?, DeliverymanName = ?, Note = ? WHERE ID = ?";
-        const [saleQuery, saleFields] = await db.execute(updateSaleQuery, [body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null, id]);
+        const updateSaleQuery = "UPDATE Sales SET ClientIdDocument = ?, ClientName = ?, Type = ?, DeliverymanName = ?, Note = ?, Direction = ?, TableNumber = ? WHERE ID = ?";
+        const [saleQuery, saleFields] = await db.execute(updateSaleQuery, [body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null, body.address || null, body.tableNumber || null, id]);
 
         const deleteOldProductsQuery = "DELETE FROM SaleDetails WHERE ID = ?";
         const [deletionResults, deletionFields] = await db.execute(deleteOldProductsQuery, [id]);
@@ -203,13 +197,14 @@ export async function getSaleSummary(req, res) {
                 s.ClientIdDocument, 
                 s.ClientName, 
                 s.Type, 
-                Sum(sd.Quantity * sd.Price) As Total 
+                Sum(sd.Quantity * sd.Price) As Total,
+                s.TableNumber 
             FROM 
                 Sales s 
                 INNER JOIN SaleDetails sd ON s.ID = sd.ID
             ${condition}
             GROUP BY
-                s.ID, s.ClientIdDocument, s.ClientName, s.Type
+                s.ID, s.ClientIdDocument, s.ClientName, s.Type, s.TableNumber
         `;
         
         const [results, fields] = await db.execute(query, data);
@@ -234,9 +229,9 @@ export async function getDetailedSale(req, res) {
                 s.Type, 
                 s.DeliverymanName, 
                 s.Note,
-                c.Address
+                s.Direction AS Address,
+                s.TableNumber
             FROM Sales s
-            LEFT JOIN Clients c ON s.ClientIdDocument = c.IdDocument
             WHERE s.ID = ?
         `;
         const [saleResult, saleFields] = await db.execute(saleQuery, id);

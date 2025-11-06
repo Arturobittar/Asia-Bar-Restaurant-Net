@@ -161,22 +161,24 @@ if (datos.numeroTicket){
   
   // Luego mostrar mesa o dirección según corresponda
   if (esParaComerAqui && datos.mesa) {
-    ticket.push(`Mesa: ${datos.mesa || ''}`);
-  } else if (esDelivery && datos.direccion) {
-    // Mostrar dirección para delivery en la misma línea
-
-// Mostrar repartidor si existe
+    ticket.push(`Mesa: ${datos.mesa}`);
+  } else if (esDelivery) {
+    // Mostrar repartidor si existe
     if (datos.deliverymanName) {
       ticket.push(`Repartidor: ${datos.deliverymanName}`);
     }
-  }
-    const lineaDireccion = (`Dirección: ${datos.direccion}`);
-    const lineasDireccion = dividirEnLineas(lineaDireccion, MAX_CHARS);
     
-    // Agregar cada línea de la dirección
-    lineasDireccion.forEach(linea => {
-      ticket.push(linea);
-    });
+    // Mostrar dirección para delivery
+    if (datos.direccion) {
+      const lineaDireccion = (`Dirección: ${datos.direccion}`);
+      const lineasDireccion = dividirEnLineas(lineaDireccion, MAX_CHARS);
+      
+      // Agregar cada línea de la dirección
+      lineasDireccion.forEach(linea => {
+        ticket.push(linea);
+      });
+    }
+  }
     
     
 

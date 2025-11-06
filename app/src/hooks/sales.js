@@ -26,7 +26,7 @@ export function useSaleID() {
 export function useEditSaleFormFields() {
     const id = useSaleID(); 
     const saleProducts = usePairs();
-    const [values, setters] = useFormFields(5); // Aumentado a 5: ClientId, ClientName, Type, Address, DeliverymanName
+    const [values, setters] = useFormFields(6); // Aumentado a 6: ClientId, ClientName, Type, Address, DeliverymanName, TableNumber
 
     let areProductsInitialized = false;
 
@@ -39,12 +39,13 @@ export function useEditSaleFormFields() {
                 return;
             }
 
-            // Setear valores del formulario: ClientIdDocument, ClientName, Type, Address, DeliverymanName
+            // Setear valores del formulario: ClientIdDocument, ClientName, Type, Address, DeliverymanName, TableNumber
             setters[0](fetched.ClientIdDocument);
             setters[1](fetched.ClientName);
             setters[2](fetched.Type);
             setters[3](fetched.Address || '');
             setters[4](fetched.DeliverymanName || '');
+            setters[5](fetched.TableNumber || '');
 
             const products = Array.isArray(fetched.products) ? fetched.products : [];
 
@@ -72,7 +73,7 @@ export function useEditSaleFormFields() {
     return [values, setters, saleProducts, onAddProduct, onDeleteProduct];
 }
 
-export function useOnEditContinue(id, client, type, address, deliverymanName, products) {
+export function useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, products) {
     const navigate = useNavigate();
 
     const productsArray = products.reduce((array, { value }) => [...array, {
@@ -88,6 +89,7 @@ export function useOnEditContinue(id, client, type, address, deliverymanName, pr
         type: type,
         address: address || null,
         deliverymanName: deliverymanName || null,
+        tableNumber: tableNumber || null,
         products: productsArray || []
     };
 
@@ -217,6 +219,7 @@ export function useActionButtons() {
                 address: fetched.Address || null,
                 note: fetched.Note || null,
                 deliverymanName: fetched.DeliverymanName || null,
+                tableNumber: fetched.TableNumber || null,
                 client: client,
                 products: productsArray
             });

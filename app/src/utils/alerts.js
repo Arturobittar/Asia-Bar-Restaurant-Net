@@ -109,7 +109,7 @@ export default class InfoField {
     }
 }
 
-function getSaleInfoHtml(client, type, deliverymanName, address, note) {
+function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note) {
     let htmlString = "<h3 class=\"alert-subtitle\">Información del Pedido</h3>\n";
 
     const data = [
@@ -117,6 +117,15 @@ function getSaleInfoHtml(client, type, deliverymanName, address, note) {
         new InfoField("Documento de Identidad", client.id),
         new InfoField("Tipo de Pedido", type)
     ];
+
+    // Mostrar mesa si es "Comer Aquí"
+    const esParaComerAqui = type && 
+        (type.toLowerCase().includes('comer') || 
+         type.toLowerCase().includes('aquí'));
+    
+    if (esParaComerAqui && tableNumber) {
+        data.push(new InfoField("Mesa", tableNumber));
+    }
 
     if (address) {
         data.push(new InfoField("Dirección", address));
@@ -141,14 +150,14 @@ function getSaleInfoHtml(client, type, deliverymanName, address, note) {
     return htmlString;
 }
 
-function getSaleHtml(client, type, products, deliverymanName, address, note) {
-    return getSaleInfoHtml(client, type, deliverymanName, address, note) + getProductsTable(products);
+function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note) {
+    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note) + getProductsTable(products);
 }
 
-export function saleAlert(number, client, type, products, deliverymanName = null, address = null, note = null) {
+export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null) {
     Swal.fire({
         title: `Orden #${number}`,
-        html: getSaleHtml(client, type, products, deliverymanName, address, note),
+        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note),
         confirmButtonText: "Vale",
         confirmButtonColor: redHue,
     });

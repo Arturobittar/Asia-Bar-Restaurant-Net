@@ -47,10 +47,16 @@ export function ClientInfo({ isNewClient, foundName, values, setters }) {
         <DisabledInputBox title="Nombre de Cliente Encontrado" value={foundName} />;
 }
 
-export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions }) {
+export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter }) {
     return(
         <>
             <RequiredInput type="combo" title="Tipo de Venta" options={saleOptions} onChange={setters[0]} value={values[0]} />  
+            
+            {   
+                (values[0] === saleOptions[0]) ? (
+                    <RequiredInput type="text" title="Mesa" onChange={tableSetter} value={tableValue} />
+                ) : null
+            }
             
             {   
                 (values[0] === saleOptions[2]) ? (
@@ -64,14 +70,14 @@ export function TypeInputs({ values, setters, deliverymanValue, deliverymanSette
     );
 }
 
-export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions }) {
+export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter }) {
     return (
         <>
             <RequiredInput type="id" title="Documento de Identidad del Cliente" value={clientId} onChange={setClientId} />
 
             <ClientInfo isNewClient={isNewClient} foundName={foundName} values={newClientValues} setters={newClientSetters} />
 
-            <TypeInputs values={typeValues} setters={typeSetters} deliverymanValue={deliverymanValue} deliverymanSetter={deliverymanSetter} deliverymenOptions={deliverymenOptions} />
+            <TypeInputs values={typeValues} setters={typeSetters} deliverymanValue={deliverymanValue} deliverymanSetter={deliverymanSetter} deliverymenOptions={deliverymenOptions} tableValue={tableValue} tableSetter={tableSetter} />
 
             <SubmitButton text="Continuar" />
         </>

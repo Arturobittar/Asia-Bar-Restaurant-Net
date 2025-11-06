@@ -4,10 +4,10 @@ import "./widgetsInicioCss/Mesa.css"
 import "./widgetsInicioCss/MasVendidos.css"
 import "./widgetsInicioCss/PedidoTicket.css"
 import {InformacionDelProductoModal, InformacionDelPedidoModal} from "./modalesInicio.js"
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../../config/routes.js'; 
 
 import { Info, ReceiptText } from "lucide-react";
-
 
 
 // Estas constantes solo estan para las pruebas
@@ -49,10 +49,13 @@ export function Mesa({nombre, onOpen}){
    const navigate = useNavigate();
 
    const handleOrdenar = (e) => {
-      const session = JSON.parse(localStorage.getItem('session'));
-      console.log("Tipo de cuenta actual:", session?.accountType);
-      console.log("Navegando a /informacion_venta");
-      navigate('/informacion_venta');
+      e.stopPropagation();
+      navigate(routes['Informacion de Venta'], { 
+         state: { 
+            fromTable: true, 
+            tableName: nombre 
+         } 
+      });
   };
    
 
@@ -202,7 +205,11 @@ export function MasVendidos({top, nombre, srcImg, precio, totalVentas, onOpen}){
 
 
 
-export function PedidoTicket({numeroPedido, clientName, totalProductos, tipoDePedido, totalTicket, onOpen, onPrint}){
+export function PedidoTicket({numeroPedido, clientName, totalProductos, tipoDePedido, mesa, totalTicket, onOpen, onPrint}){
+
+   const esParaComerAqui = tipoDePedido && 
+      (tipoDePedido.toLowerCase().includes('comer') || 
+       tipoDePedido.toLowerCase().includes('aquí'));
 
    return (
 
@@ -212,6 +219,9 @@ export function PedidoTicket({numeroPedido, clientName, totalProductos, tipoDePe
             <h3 className="numeroDePedido">Pedido N° {numeroPedido}</h3>
             <span className="NombreComprador">{clientName}</span>
             <span className="tipoDePedidoTicket">Tipo de pedido: {tipoDePedido}</span>
+            {esParaComerAqui && mesa && (
+               <span className="mesaTicket">Mesa: {mesa}</span>
+            )}
          </div>
 
          <span className="totalTicket">{Number.parseFloat(totalTicket).toFixed(2)}$</span>

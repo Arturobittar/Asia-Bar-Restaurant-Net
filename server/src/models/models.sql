@@ -46,8 +46,9 @@ CREATE TABLE Sales (
     ClientName VARCHAR(50) NOT NULL,
     Type VARCHAR(20) NOT NULL,
     DeliverymanName VARCHAR(50),
-    Note TEXT
-    
+    Note TEXT,
+    Direction VARCHAR(25),
+    TableNumber VARCHAR(20)
 );
 
 CREATE TABLE SaleDetails (

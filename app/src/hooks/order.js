@@ -33,8 +33,8 @@ export function useOrderClearer() {
 export function useOrderDetailsChanger() {
     const { order, setOrder } = useContext(OrderContext);
 
-    const setNewDetails = async (clientID, clientName, type, address, deliverymanName) => {
-        const newOrder = await new Order(clientID, clientName, type, address, deliverymanName, order.products, order.note); 
+    const setNewDetails = async (clientID, clientName, type, address, deliverymanName, tableNumber) => {
+        const newOrder = await new Order(clientID, clientName, type, address, deliverymanName, tableNumber, order.products, order.note); 
         await setOrder(newOrder);
     };
     
@@ -79,18 +79,15 @@ export function useOnDetailsSubmit() {
                 getNewClientInfo, 
                 () => successAlert("Cliente Agregado", "Los datos del cliente han sido correctamente registrados en el sistema")
             );
-        } else if (details.type === "Delivery" && details.address) {
-            // Si el cliente ya existe y es Delivery, actualizar su dirección
-            await updateClientAddress(details.clientID, details.clientName, details.address, '');
         }
 
-        detailsChanger(details.clientID, details.clientName, details.type, details.address, details.deliverymanName);
+        detailsChanger(details.clientID, details.clientName, details.type, details.address, details.deliverymanName, details.tableNumber);
 
         navigate(route);
     } 
 }
 
-export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliverymanName) {
+export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliverymanName, tableNumber) {
     const clientName = isNewClient ? newName : foundName;
 
     return () => { 
@@ -99,7 +96,8 @@ export function useDetailsGetter(clientID, isNewClient, newName, foundName, type
             clientName: clientName, 
             type: type,
             address: address,
-            deliverymanName: deliverymanName
+            deliverymanName: deliverymanName,
+            tableNumber: tableNumber
         }
     };
 }
@@ -209,7 +207,7 @@ export function useOrderChanger(products, note) {
     const { order, setOrder } = useContext(OrderContext);
 
     const setNewInfo = async () => {
-        const newOrder = await new Order(order.clientID, order.clientName, order.type, order.address, order.deliverymanName, products, note); 
+        const newOrder = await new Order(order.clientID, order.clientName, order.type, order.address, order.deliverymanName, order.tableNumber, products, note); 
         await setOrder(newOrder);
     };
     

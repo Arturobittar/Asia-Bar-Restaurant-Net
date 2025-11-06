@@ -98,6 +98,7 @@ function Inicio(){
                                                     productsArray,
                                                     fetched.DeliverymanName || null,
                                                     fetched.Address || null,
+                                                    fetched.TableNumber || null,
                                                     fetched.Note || null
                                                 );
                                             } catch (error) {
@@ -115,6 +116,7 @@ function Inicio(){
                                                 numeroPedido={product[0]}
                                                 clientName={product[2]}
                                                 tipoDePedido={product[3]}
+                                                mesa={product[5]}
                                                 totalTicket={product[4]} 
                                                 onOpen={() => showAlert()}
                                                 onPrint={() => onPrint(product[0])}

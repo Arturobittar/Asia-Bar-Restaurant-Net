@@ -32,6 +32,7 @@ export function useTicketPrinter() {
                 address: fetched.Address || null,
                 note: fetched.Note || null,
                 deliverymanName: fetched.DeliverymanName || null,
+                tableNumber: fetched.TableNumber || null,
                 client: client,
                 products: productsArray
             });
