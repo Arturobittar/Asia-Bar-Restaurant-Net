@@ -75,18 +75,27 @@ function getProductsTable(data) {
     
     htmlString += "<div class=\"products-table-container\">";
     
+    let totalGeneral = 0;
+    
     data.forEach((product) => {
         const name = product[0];
-        const unitaryCost = product[1];
-        const quantity = product[2];
+        const unitaryCost = parseFloat(product[1]);
+        const quantity = parseInt(product[2]);
+        const subtotal = unitaryCost * quantity;
+
+        totalGeneral += subtotal;
 
         const getFieldHtml = (title, value) => "\t<p class=\"product-field\"><b>" + title + ":</b> " + value + "</p>\n";
 
-        htmlString += getFieldHtml("Nombre", name) + getFieldHtml("Costo Unitario", unitaryCost + "$") + getFieldHtml("Cantidad", quantity);
+        htmlString += getFieldHtml("Nombre", name) + getFieldHtml("Costo Unitario", unitaryCost.toFixed(2) + "$") + getFieldHtml("Cantidad", quantity);
        
-        htmlString += "\t<p class=\"total-field\">" + "<span>Total:</span> <span>" + unitaryCost * quantity + "$</span>" + "</p>\n";
+        htmlString += "\t<p class=\"total-field\">" + "<span>Total:</span> <span>" + subtotal.toFixed(2) + "$</span>" + "</p>\n";
     });
-        
+    
+    // Agregar total general
+    htmlString += "\t<div class=\"grand-total\">";
+    htmlString += "\t\t<p><b>TOTAL GENERAL:</b> <span>" + totalGeneral.toFixed(2) + "$</span></p>";
+    htmlString += "\t</div>\n";
 
     htmlString += "</div>";
 
@@ -100,7 +109,7 @@ export default class InfoField {
     }
 }
 
-function getSaleInfoHtml(client, type) {
+function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note) {
     let htmlString = "<h3 class=\"alert-subtitle\">Información del Pedido</h3>\n";
 
     const data = [
@@ -108,6 +117,27 @@ function getSaleInfoHtml(client, type) {
         new InfoField("Documento de Identidad", client.id),
         new InfoField("Tipo de Pedido", type)
     ];
+
+    // Mostrar mesa si es "Comer Aquí"
+    const esParaComerAqui = type && 
+        (type.toLowerCase().includes('comer') || 
+         type.toLowerCase().includes('aquí'));
+    
+    if (esParaComerAqui && tableNumber) {
+        data.push(new InfoField("Mesa", tableNumber));
+    }
+
+    if (address) {
+        data.push(new InfoField("Dirección", address));
+    }
+
+    if (deliverymanName) {
+        data.push(new InfoField("Repartidor", deliverymanName));
+    }
+
+    if (note) {
+        data.push(new InfoField("Nota", note));
+    }
 
     htmlString += "\t<div class=\"info-fields-container\">";
 
@@ -120,14 +150,14 @@ function getSaleInfoHtml(client, type) {
     return htmlString;
 }
 
-function getSaleHtml(client, type, products) {
-    return getSaleInfoHtml(client, type) + getProductsTable(products);
+function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note) {
+    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note) + getProductsTable(products);
 }
 
-export function saleAlert(number, client, type, products) {
+export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null) {
     Swal.fire({
         title: `Orden #${number}`,
-        html: getSaleHtml(client, type, products),
+        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note),
         confirmButtonText: "Vale",
         confirmButtonColor: redHue,
     });

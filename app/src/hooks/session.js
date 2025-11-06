@@ -25,3 +25,15 @@ export function useModifyID() {
     
     return session.modifyID;
 }
+
+export function useRolChanger() {
+    const { session, setSession } = useContext(SessionContext);
+    
+    return (rol) => setSession(new Session(rol, session.username, session.table, session.modifyID));
+}
+
+export function useRol() {
+    const { session, setSession } = useContext(SessionContext);
+
+    return session.rol;
+}

@@ -55,17 +55,17 @@ function getAllColumnNames(fields) {
     return allColumnNames;
 }
 
-function TableContent({ fields, data, onInfo, onEdit, onDelete }) {
+function TableContent({ fields, data, onInfo, onEdit, onDelete, onTicket }) {
     return (data.length === 0)
         ? <h1>No hay entradas</h1> 
-        : <Table fields={ getAllColumnNames(fields) } data={ data } onInfo={ onInfo } onEdit={ onEdit } onDelete={ onDelete } bodyFields={ fields }/>;
+        : <Table fields={ getAllColumnNames(fields) } data={ data } onInfo={ onInfo } onEdit={ onEdit } onDelete={ onDelete } onTicket={ onTicket } bodyFields={ fields }/>;
 }
 
-export default function TablePage({ title, fields, data, onInfo, onEdit, onDelete, onNew, onSearch }) {
+export default function TablePage({ title, fields, data, onInfo, onEdit, onDelete, onNew, onSearch, onTicket }) {
     return( 
         <DashboardPage>
             <Header title={ title } onNew={ onNew } onSearch={ onSearch } />
-            <TableContent fields={ fields } data={ data } onInfo={ onInfo } onEdit={ onEdit } onDelete={ onDelete } />
+            <TableContent fields={ fields } data={ data } onInfo={ onInfo } onEdit={ onEdit } onDelete={ onDelete } onTicket={ onTicket } />
         </DashboardPage>
     );
 }

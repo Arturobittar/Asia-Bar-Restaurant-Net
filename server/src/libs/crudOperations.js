@@ -112,10 +112,10 @@ export async function addSale(req, res) {
         const body = req.body;
         const products = body.products;
 
-        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type) VALUES (?, ?, ?, ?)`;
+        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         const productQuery = `INSERT INTO SaleDetails (ID, Name, Price, Quantity) VALUES (?, ?, ?, ?)`;
         
-        const [results, fields] = await db.execute(saleQuery, [body.id, body.clientId, body.clientName, body.type]);
+        const [results, fields] = await db.execute(saleQuery, [body.id, body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null, body.address || null, body.tableNumber || null]);
 
         products.map( async (product) => {
             const [results, fields] = await db.execute(productQuery, [body.id, product.name, product.price, product.quantity]);
@@ -137,8 +137,8 @@ export async function updateSale(req, res) {
         if (detectionResults.length === 0)
             res.status(404).json({message: "No entry with such id"})
 
-        const updateSaleQuery = "UPDATE Sales SET ClientIdDocument = ?, ClientName = ?, Type = ? WHERE ID = ?";
-        const [saleQuery, saleFields] = await db.execute(updateSaleQuery, [body.clientId, body.clientName, body.type, id]);
+        const updateSaleQuery = "UPDATE Sales SET ClientIdDocument = ?, ClientName = ?, Type = ?, DeliverymanName = ?, Note = ?, Direction = ?, TableNumber = ? WHERE ID = ?";
+        const [saleQuery, saleFields] = await db.execute(updateSaleQuery, [body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null, body.address || null, body.tableNumber || null, id]);
 
         const deleteOldProductsQuery = "DELETE FROM SaleDetails WHERE ID = ?";
         const [deletionResults, deletionFields] = await db.execute(deleteOldProductsQuery, [id]);
@@ -197,13 +197,14 @@ export async function getSaleSummary(req, res) {
                 s.ClientIdDocument, 
                 s.ClientName, 
                 s.Type, 
-                Sum(sd.Quantity * sd.Price) As Total 
+                Sum(sd.Quantity * sd.Price) As Total,
+                s.TableNumber 
             FROM 
                 Sales s 
                 INNER JOIN SaleDetails sd ON s.ID = sd.ID
             ${condition}
             GROUP BY
-                s.ID, s.ClientIdDocument, s.ClientName, s.Type
+                s.ID, s.ClientIdDocument, s.ClientName, s.Type, s.TableNumber
         `;
         
         const [results, fields] = await db.execute(query, data);
@@ -220,7 +221,19 @@ export async function getDetailedSale(req, res) {
     handleQueryExecution(res, async (db) => {
         const id = [req.params.id];
 
-        const saleQuery = "SELECT ID, ClientIdDocument, ClientName, Type FROM Sales WHERE ID = ?";
+        const saleQuery = `
+            SELECT 
+                s.ID, 
+                s.ClientIdDocument, 
+                s.ClientName, 
+                s.Type, 
+                s.DeliverymanName, 
+                s.Note,
+                s.Direction AS Address,
+                s.TableNumber
+            FROM Sales s
+            WHERE s.ID = ?
+        `;
         const [saleResult, saleFields] = await db.execute(saleQuery, id);
         const sale = saleResult[0];
 

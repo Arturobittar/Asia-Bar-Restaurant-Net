@@ -1,0 +1,68 @@
+.restricted-page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--yellow-background-hue) 0%, var(--red-hue) 100%);
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    gap: 30px;
+}
+
+.restricted-page-title {
+    color: #fff;
+    font-size: 2.5rem;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    max-width: 800px;
+    line-height: 1.4;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0;
+}
+
+.login-link {
+    display: inline-block;
+    padding: 15px 30px;
+    background: linear-gradient(45deg, var(--bright-red-hue) 0%, var(--red-hue));
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.5s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    text-align: center;
+    min-width: 200px;
+}
+
+.login-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(45deg, var(--red-hue) 0%, var(--bright-red-hue));
+}
+
+.login-link:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-link {
+    animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

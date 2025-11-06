@@ -1,5 +1,9 @@
 DROP DATABASE IF EXISTS AsiaBarRestaurant;
+
+-- Luego la creamos
 CREATE DATABASE AsiaBarRestaurant;
+
+-- Seleccionamos la base de datos
 USE AsiaBarRestaurant;
 
 CREATE TABLE Users (
@@ -40,7 +44,11 @@ CREATE TABLE Sales (
     ID INT PRIMARY KEY AUTO_INCREMENT,
     ClientIdDocument VARCHAR(20) NOT NULL,
     ClientName VARCHAR(50) NOT NULL,
-    Type VARCHAR(20) NOT NULL
+    Type VARCHAR(20) NOT NULL,
+    DeliverymanName VARCHAR(50),
+    Note TEXT,
+    Direction VARCHAR(25),
+    TableNumber VARCHAR(20)
 );
 
 CREATE TABLE SaleDetails (
@@ -57,3 +65,11 @@ CREATE TABLE Deliverymen (
     Availability INT DEFAULT TRUE NOT NULL,
     Phone VARCHAR(20) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS TipoCambio (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    Tasa DECIMAL(10, 4) NOT NULL,
+    FechaActualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO TipoCambio (Tasa) VALUES (212.48);

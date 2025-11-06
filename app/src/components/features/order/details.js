@@ -47,27 +47,37 @@ export function ClientInfo({ isNewClient, foundName, values, setters }) {
         <DisabledInputBox title="Nombre de Cliente Encontrado" value={foundName} />;
 }
 
-export function TypeInputs({ values, setters }) {
+export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter }) {
     return(
         <>
             <RequiredInput type="combo" title="Tipo de Venta" options={saleOptions} onChange={setters[0]} value={values[0]} />  
             
             {   
-                (values[0] === saleOptions[2]) ? 
-                    <RequiredInput type="text" title="Dirección" onChange={ setters[1] } /> : null
+                (values[0] === saleOptions[0]) ? (
+                    <RequiredInput type="text" title="Mesa" onChange={tableSetter} value={tableValue} />
+                ) : null
+            }
+            
+            {   
+                (values[0] === saleOptions[2]) ? (
+                    <>
+                        <RequiredInput type="text" title="Repartidor" options={deliverymenOptions} onChange={deliverymanSetter} value={deliverymanValue} />
+                        <RequiredInput type="text" title="Dirección" onChange={ setters[1] } value={values[1]} />
+                    </>
+                ) : null
             } 
         </>
     );
 }
 
-export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters }) {
+export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter }) {
     return (
         <>
             <RequiredInput type="id" title="Documento de Identidad del Cliente" value={clientId} onChange={setClientId} />
 
             <ClientInfo isNewClient={isNewClient} foundName={foundName} values={newClientValues} setters={newClientSetters} />
 
-            <TypeInputs values={typeValues} setters={typeSetters} />
+            <TypeInputs values={typeValues} setters={typeSetters} deliverymanValue={deliverymanValue} deliverymanSetter={deliverymanSetter} deliverymenOptions={deliverymenOptions} tableValue={tableValue} tableSetter={tableSetter} />
 
             <SubmitButton text="Continuar" />
         </>

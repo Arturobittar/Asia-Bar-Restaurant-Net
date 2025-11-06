@@ -1,6 +1,6 @@
 // Configuración de red actualizada automáticamente
 const networkConfig = {
-    serverUrl: 'http://10.218.33.59:3000'
+    serverUrl: 'http://10.73.239.59:3000'
 };
 
 export const getNetworkConfig = () => networkConfig;

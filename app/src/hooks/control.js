@@ -24,13 +24,19 @@ export function useTableData(table) {
     const [data, setData] = useState([]);
     
     const fetchData = async () => {
+        if (!table) {
+            setData([]);
+            return;
+        }
+
         const fetched = await getTableData(table.dbname);
         setData(fetched);
     };
 
     useEffect(() => {
         fetchData();
-    }, [table.dbname]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [table?.dbname]);
 
     return [data, setData];
 }
@@ -54,6 +60,11 @@ export function useHeaderButtons(table, setData) {
 
     const onSearchClick = (query) => {
         const searchData = async function() {
+            if (!table) {
+                setData([]);
+                return;
+            }
+
             const data = await getTableData(table.dbname, query);
             setData(data);
         };

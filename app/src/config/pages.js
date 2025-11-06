@@ -16,6 +16,8 @@ import EditOrder from "../pages/edit-order.js";
 
 import { names } from "./routes.js"
 
+import { Roles, AllRoles } from "./roles.js";
+
 const components = [
     Home,
     Login,
@@ -29,7 +31,7 @@ const components = [
 ]
 
 export const pages = components.map((Component, index) => 
-  new Page(names[index], <Component />)
+  new Page(names[index], <Component />, (names[index] === "Inicio de Sesion") ? null : AllRoles )
 );
 
 export function getPageFromPath(path) {

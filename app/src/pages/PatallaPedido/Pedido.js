@@ -7,7 +7,7 @@ import { WidgetNota } from "./Widgets";
 import DashboardPage from "../../components/layout/dashboard-page.js";
 
 import { useNavigate } from "react-router-dom";
-import { categories, useCategory, useDishes, useProducts, useOrderChanger } from "../../hooks/order.js";
+import { categories, useCategory, useDishes, useProducts, useOrderChanger, useOrder } from "../../hooks/order.js";
 
 import { questionAlert } from "../../utils/alerts.js";
 
@@ -15,13 +15,14 @@ const CategoryTitles = ["Menú", "Contornos", "Productos", "Todos"];
 
 function ContenidoPedido() {
 
+    const order = useOrder();
     const [category, changeCategory] = useCategory();
     const dishes = useDishes(category);
 
     const [products, addFirst, increase, decrease] = useProducts();
 
     const [nota, setNota] = useState(false);
-    const [textoNota, setTextoNota] = useState('');
+    const [textoNota, setTextoNota] = useState(order.note || '');
 
     const orderChanger = useOrderChanger(products, textoNota);
 
@@ -55,6 +56,13 @@ function ContenidoPedido() {
     }, []);
 
     const [isVisible, setIsVisible] = useState(false);
+
+    // Sincronizar textoNota con el contexto cuando cambie
+    useEffect(() => {
+        if (order.note) {
+            setTextoNota(order.note);
+        }
+    }, [order.note]);
 
     const toggleNota = () => {
         setNota(!nota)

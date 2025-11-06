@@ -56,3 +56,23 @@
     background-color: var(--white-hue);
     color: black;
 }
+
+.grand-total {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid var(--dark-gray-hue);
+}
+
+.grand-total p {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--red-hue);
+    margin: 0;
+}
+
+.grand-total span {
+    font-size: 20px;
+    color: var(--red-hue);
+}

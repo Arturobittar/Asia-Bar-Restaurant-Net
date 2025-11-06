@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import CookieParser from 'cookie-parser';
 import authRouter from './routes/auth.routes.js';
 import crudRouter from './routes/crud.routes.js';
+import tipoCambioRouter from './routes/tipoCambio.routes.js';
 import cors from 'cors';
 
 const app = express();
@@ -10,7 +11,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  'http://10.218.33.59:3000'
+  'http://10.73.239.59:3000'
 ];
 
 app.use(cors({
@@ -26,5 +27,6 @@ app.use(CookieParser());
 
 app.use('/api', authRouter);
 app.use('/api', crudRouter);
+app.use('/api/tipo-cambio', tipoCambioRouter);
 
 export default app;

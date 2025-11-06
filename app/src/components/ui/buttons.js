@@ -9,7 +9,7 @@ export function GoBackButton({text = "Volver", to = "/"}) {
     return (
         <Link className="go-back-button" to={to}>
             {text}
-        </ Link>
+        </Link>
     );    
 }
 

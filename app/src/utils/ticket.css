@@ -1,0 +1,129 @@
+#ticket-print-content {
+    display: block !important;
+    width: 100%;
+    text-align: center;
+    padding: 0;
+    margin-left: 5mm;
+}
+
+.ticket-container {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    background-color: white;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    display: inline-block;
+    text-align: left;
+    margin: 0 auto;
+    padding: 2mm;
+    width: 54mm;
+    max-width: 54mm;
+}
+
+pre {
+    font-size: 10px;
+    line-height: 1.1;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    #ticket-print-content, #ticket-print-content * {
+        visibility: visible;
+    }
+    
+    #ticket-print-content {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+        width: 58mm;
+        display: block !important;
+        text-align: center;
+    }
+    
+    .ticket-container {
+        font-family: 'Courier New', monospace;
+        font-size: 10px;
+        background-color: white;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        display: inline-block;
+        text-align: left;
+        margin: 0 auto;
+        padding: 2mm;
+        width: 54mm;
+        max-width: 54mm;
+    }
+    
+    pre {
+        font-size: 10px;
+        line-height: 1.1;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        text-align: left;
+    }
+    
+    @page { 
+        margin: 0;
+        size: 58mm auto;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    
+    /* Ocultar encabezados y pies de página del navegador */
+    @page {
+        margin: 0;
+        size: 58mm auto;
+        @top-left { content: ""; }
+        @top-center { content: ""; }
+        @top-right { content: ""; }
+        @bottom-left { content: ""; }
+        @bottom-center { content: ""; }
+        @bottom-right { content: ""; }
+    }
+    
+    /* Eliminar márgenes del navegador */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+/* Configuración específica para impresoras térmicas */
+@media print and (width: 58mm) {
+    #ticket-print-content {
+        left: 50%;
+        transform: translateX(-50%);
+        width: 58mm;
+    }
+    
+    .ticket-container {
+        width: 54mm;
+        padding: 2mm;
+        font-size: 9px;
+    }
+    
+    pre { 
+        font-size: 9px;
+        line-height: 1.0;
+    }
+    
+    @page { 
+        margin: 0;
+        size: 58mm auto;
+    }
+}

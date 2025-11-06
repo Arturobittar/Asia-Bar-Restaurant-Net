@@ -5,9 +5,9 @@ import './form.css';
 
 import { idTypes, phonePrefixes, cityOptions } from "../../config/tables.js";
 
-function InputBoxWrapper({ title, children }) {
+function InputBoxWrapper({ title, children, hasMargin = true }) {
     return(
-        <div className="input-box">
+        <div className={`input-box ${hasMargin ? "margined" : ""}`}>
             {   
                 !title ? null : (
                     <label className="input-title" htmlFor={ title }>
@@ -23,7 +23,7 @@ function InputBoxWrapper({ title, children }) {
 function SimpleRequiredInput({ type = 'text', title, placeholder, onChange, regex, value, options }) {
     return (
         <input 
-            className="simple-input"
+            className="simple-input" 
             type={ type } 
             id={ title } 
             placeholder={ placeholder } 
@@ -37,9 +37,9 @@ function SimpleRequiredInput({ type = 'text', title, placeholder, onChange, rege
     );
 }
 
-export function RequiredInputBox({ title, onChange, type = 'text', regex, value, placeholder, options = {} }) {
+export function RequiredInputBox({ title, onChange, type = 'text', regex, value, placeholder, options = {}, hasMargin = true }) {
     return(
-        <InputBoxWrapper title={title}>
+        <InputBoxWrapper title={title} hasMargin={hasMargin}>
             <SimpleRequiredInput
                 type={ type } 
                 title={ title }
@@ -87,9 +87,9 @@ export function SearchInputBox({ onChange, value }) {
     );
 }
 
-function Selector({ title, options, onChange, value }) {
+function Selector({ title, options, onChange, value, hasMargin = true }) {
     return(
-        <InputBoxWrapper title={title}>
+        <InputBoxWrapper title={title} hasMargin={hasMargin}>
             <select 
                 className="selector" 
                 id={ title } 
@@ -103,7 +103,7 @@ function Selector({ title, options, onChange, value }) {
     );
 }
 
-function RequiredCombo({ title, options, onChange, value, defaultValue, onSetDefault }) {
+function RequiredCombo({ title, options, onChange, value, defaultValue, onSetDefault, hasMargin = true }) {
     useEffect(() => {
         onSetDefault(defaultValue);
     }, []);
@@ -114,11 +114,12 @@ function RequiredCombo({ title, options, onChange, value, defaultValue, onSetDef
             options={options}
             onChange={onChange}
             value={value}
+            hasMargin={hasMargin}
         />
     );
 }
 
-export function RequiredSelector({ title, options, onChange, value }) {
+export function RequiredSelector({ title, options, onChange, value, hasMargin = true }) {
     const defaultValue = value || options[0];
 
     return( 
@@ -129,6 +130,7 @@ export function RequiredSelector({ title, options, onChange, value }) {
             onSetDefault={onChange}
             defaultValue={defaultValue}
             value={defaultValue}
+            hasMargin={hasMargin}
         />
     );
 }
@@ -238,19 +240,22 @@ function RequiredInputSelector({ title, value, onChange, options, optionSize }) 
 
     return (
         <InputBoxWrapper title={title}> 
-            <div className="phone-input-container">
+            <div className="input-selector-container">
                 <div className="prefix-container">
                     <RequiredSelector
                         options={allOptions}
                         onChange={onChangeSelection}
                         value={selected}
+                        hasMargin={false}
                     />
                 </div>
 
-                <div className="phone-text-container">
+                <div className="input-selector-text-container">
                     <RequiredInputBox
                         onChange={onTextInput}
                         value={displayValue}
+                        placeholder={title}
+                        hasMargin={false}
                     />
                 </div>
             </div>

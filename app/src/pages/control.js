@@ -6,7 +6,7 @@ function ControlPage() {
     const table = useTable();
     const [data, setData] = useTableData(table);
     const [onEdit, onDelete] = useActionButtons(table);
-    const [onNew, onSearch] = useHeaderButtons(table, setData)
+    const [onNew, onSearch] = useHeaderButtons(table, setData);
 
     return (
         <TablePage 

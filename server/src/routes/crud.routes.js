@@ -31,9 +31,9 @@ Object.entries(searchEndpointFunctions).forEach( ( [ table, endpointFunction ] )
     crudRouter.get(`/${ table }/search/:query`, endpointFunction);
 });;
 
+crudRouter.get("/sales/details/:id", getDetailedSale);
 crudRouter.get("/sales", getSaleSummary);
 crudRouter.get("/sales/:id", getSaleSummary);
-crudRouter.get("/sales/details/:id", getDetailedSale);
 crudRouter.get("/search/sales/", searchSale);
 crudRouter.get("/search/sales/:id", searchSale);
 crudRouter.post("/sales", addSale);

@@ -1,5 +1,8 @@
+.margined {
+    margin: 20px 0px;
+}
+
 .input-box {
-    margin: 30px 0px;
     display: flex;
     flex-direction: column;
     text-align: left;
@@ -74,7 +77,6 @@
     box-shadow: 0 0 0 2px rgba(206, 37, 37, 0.2);
 }
 
-
 .selector {
     min-width: 15%;
     height: 50px;
@@ -87,7 +89,7 @@
     font-size: 16px;
 }
 
-.phone-input-container {
+.input-selector-container {
     display: flex;
     width: 100%;
     gap: 8px;
@@ -98,7 +100,7 @@
     width: 25%;
 }
 
-.phone-text-container {
+.input-selector-text-container{
     width: 75%;
 }
 

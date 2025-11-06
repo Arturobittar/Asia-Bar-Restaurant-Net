@@ -290,13 +290,15 @@
     font-size: 16px;
     background: #333;
     box-shadow: 0 4px 6px #0003;
-
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     position: absolute;
     bottom: 30px;
-    right: 50px;
+    right: 30px;
     z-index: 2;
-
+    top: 5px;
 
     
 }
@@ -315,8 +317,9 @@
 
     position: absolute;
     bottom: 30px;
-    right: 40px;
+    right: 37px;
     z-index: 2;
+    top: 65px;
 
   
 

@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'; 
+import { useRol } from '../../../hooks/session.js'
 
 import './menu-item.css';
 
@@ -13,10 +14,12 @@ function Subitem({ name, onClick }) {
 }
 
 function SubMenu({ subitems, onSubClick }) {
+    const rol = useRol(); 
+    
     return (
         <ul className="submenu">
             {   
-                subitems.map(( subitem, i) => ( 
+                subitems.map(( subitem, i) => (rol !== "Administrador" && subitem.isForOnlyAdmin) ? null : ( 
                     <Subitem 
                         key={ `subitem-${subitem.name}-${i}` } 
                         name={subitem.name} 

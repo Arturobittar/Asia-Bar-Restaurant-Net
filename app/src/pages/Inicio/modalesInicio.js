@@ -5,20 +5,29 @@ import "./widgetsInicioCss/informacionDePedido.css"
 import {TarjetaProductoInformacionVenta} from "../ConfirmacionDeVenta/widgetsConfirmacionVenta.js"
 
 
-export function ModalInicio({contenido, onOpen, onClose}){
+export function ModalInicio({contenido, onOpen, onClose, onModalClick}){
 
-
-
+    // Cerrar modal al hacer clic en el overlay
+    const handleOverlayClick = (e) => {
+        if (e.target.classList.contains('overlayModalInicio')) {
+            onClose();
+        }
+    };
+    
+    // Manejar clic en el modal (para cerrar sidebar si está abierto)
+    const handleModalClick = () => {
+        if (onModalClick) {
+            onModalClick();
+        }
+    };
 
     return (
 
         <div className="mainModalInicio">
 
-           
-
-            <div className="overlayModalInicio">
+            <div className="overlayModalInicio" onClick={handleOverlayClick}>
                     
-                <div className="modalInicio">
+                <div className="modalInicio" onClick={handleModalClick}>
                     <button className="btnCerrarModal" onClick={onClose}>x</button>
 
                         {contenido}
@@ -26,7 +35,6 @@ export function ModalInicio({contenido, onOpen, onClose}){
                 </div>
 
             </div>
-
 
         </div>
 

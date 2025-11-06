@@ -5,7 +5,7 @@ const fields = ["N°", "ID. Cliente", "Cliente", "Tipo", "Total"];
 
 function SalesControl() {
     const [data, setData] = useData();
-    const [onDelete, onInfo, onEdit] = useActionButtons();
+    const [onDelete, onInfo, onEdit, onTicket] = useActionButtons();
     const [onNew, onSearch] = useHeaderButtons(setData)
 
     return (
@@ -17,6 +17,7 @@ function SalesControl() {
             onDelete={onDelete}
             onInfo={onInfo}
             onEdit={onEdit}
+            onTicket={onTicket}
             onNew={onNew}
             onSearch={onSearch}
         />

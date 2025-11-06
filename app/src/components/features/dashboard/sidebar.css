@@ -1,32 +1,39 @@
 .home-button {
     width: 100%;
-}
-
-.home-button-link {
+  }
+  
+  .home-button-link {
     display: block;
     min-width: 100%;
-    
-    border-radius: 0.5rem; 
-    padding: 0.5rem 1.5rem; 
+  
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.5rem;
     font-size: 1.5rem;
-    font-weight: bold; 
-    color: var(--yellow-background-hue);    
+    font-weight: bold;
+    color: var(--yellow-background-hue);
     text-decoration: none;
-    background: transparent;    
-    border: none; 
-    cursor: pointer; 
+    background: transparent;
+    border: none;
+    cursor: pointer;
     transition: background-color 0.2s;
-        
+  
     text-align: left;
     box-sizing: border-box;
-}
-
-.home-button-link:hover { 
+  }
+  
+  .home-button-link:hover {
     background-color: var(--dark-red-hue);
-}
-
-.sidebar {
-    position: fixed; 
+  }
+  
+  .escanea {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--yellow-background-hue);
+    text-align: center;
+    
+  }
+  .sidebar {
+    position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
@@ -35,23 +42,28 @@
     transform: translateX(-100%);
     transition: transform 0.5s ease-in-out;
     z-index: 30;
-
+  
     overflow-x: hidden;
     direction: rtl;
     box-shadow: inset -20px 0 40px var(--dark-red-hue);
-}
-
-.sidebar.open {
+  }
+  
+  .sidebar.open {
     transform: translateX(0);
-}
-
-.logo-container {   
-    padding: 1rem;
-    text-align: center;
+  }
+  
+  .logo-container {
+    height: 10rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
     position: relative;
-}
-
-.logo-placeholder {
+  }
+  
+  /* Agregando estilos para el contenedor del logo con funcionalidad de toggle */
+  .logo-placeholder {
     width: 150px;
     height: 160px;
     margin: 0 auto;
@@ -61,25 +73,27 @@
     align-items: center;
     justify-content: center;
     padding: 10px;
+  
     transition: all 0.3s ease;
     cursor: pointer;
     overflow: hidden;
     position: relative;
-}
-
-.logo-placeholder:hover {
+  }
+  
+  .logo-placeholder:hover {
     transform: scale(1.03);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.logo-image {
+  }
+  
+  .logo-image {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
     transition: opacity 0.3s ease;
-}
-
-.qr-inside-logo {
+  }
+  
+  /* Estilos para el código QR dentro del logo */
+  .qr-inside-logo {
     width: 100%;
     height: 100%;
     display: flex;
@@ -89,13 +103,12 @@
     padding: 10px;
     box-sizing: border-box;
     animation: fadeIn 0.3s ease-out;
-}
-
-.qr-code-holder {
+  }
+  
+  .qr-code-holder {
     background: white;
     padding: 5px;
     border-radius: 4px;
-    margin-bottom: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -103,40 +116,48 @@
     height: 100%;
     max-width: 140px;
     max-height: 140px;
-}
-
-.qr-code-holder img {
+  }
+  
+  .qr-code-holder img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
-}
-
-.logo-placeholder.show-qr .logo-image {
+  }
+  
+  /* Animación para el cambio entre logo y QR */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .logo-placeholder.show-qr .logo-image {
     position: absolute;
     opacity: 0;
     pointer-events: none;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-.menu-items {
+  }
+  
+  .menu-items {
     margin-inline-end: auto;
     overflow-y: auto;
     overflow-x: hidden;
-    display: flex; 
+    display: flex;
     flex-direction: column;
     gap: 0.10rem;
     list-style: none;
-}
-
-.menu-title {
+  }
+  
+  .menu-title {
     padding: 0.5rem 3rem;
     font-size: 1.5rem;
     font-weight: bold;
     color: var(--yellow-background-hue);
     text-align: center;
-}
+  }
+  
