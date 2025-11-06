@@ -47,7 +47,7 @@ CREATE TABLE Sales (
     Type VARCHAR(20) NOT NULL,
     DeliverymanName VARCHAR(50),
     Note TEXT,
-    Direction VARCHAR(25),
+    Direction VARCHAR(100),
     TableNumber VARCHAR(20)
 );
 
