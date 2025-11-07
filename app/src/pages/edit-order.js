@@ -26,9 +26,13 @@ function EditOrder() {
     const type = values[2];
     const address = values[3];
     const deliverymanName = values[4];
-    const isDelivery = type === saleOptions[2]; // "Delivery" es la tercera opción
+    const tableNumber = values[5];
+    const note = values[6];
 
-    const onContinue = useOnEditContinue(id, client, type, address, deliverymanName, products);
+    const isDelivery = type === saleOptions[2]; // "Delivery" es la tercera opción
+    const isEatHere = type === saleOptions[0]; // "Comer Aquí" es la primera opción
+
+    const onContinue = useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, note, products);
 
     return (
         <ControlForm title={`Venta N°${id}`} backRoute={routes['Control de Ventas']} onSubmit={onContinue} > 
@@ -42,6 +46,12 @@ function EditOrder() {
                     <RequiredInput type="text" title="Nombre del Repartidor" onChange={setters[4]} value={deliverymanName} />
                 </>
             )}
+
+            {isEatHere && (
+                <RequiredInput type="text" title="Mesa" onChange={setters[5]} value={tableNumber} />
+            )}
+
+            <RequiredInput type="textarea" title="Nota" onChange={setters[6]} value={note} />
         
             <EditProductsSection 
                 products={products} 

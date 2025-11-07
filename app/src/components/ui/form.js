@@ -37,6 +37,21 @@ function SimpleRequiredInput({ type = 'text', title, placeholder, onChange, rege
     );
 }
 
+function RequiredTextarea({ title, onChange, value, placeholder, hasMargin = true }) {
+    return (
+        <InputBoxWrapper title={title} hasMargin={hasMargin}>
+            <textarea
+                className="simple-input textarea-input"
+                id={ title }
+                placeholder={ placeholder ?? title }
+                value={ value }
+                onChange={ (e) => onChange(e.target.value) }
+                required
+            ></textarea>
+        </InputBoxWrapper>
+    );
+}
+
 export function RequiredInputBox({ title, onChange, type = 'text', regex, value, placeholder, options = {}, hasMargin = true }) {
     return(
         <InputBoxWrapper title={title} hasMargin={hasMargin}>
@@ -313,7 +328,9 @@ export function RequiredInput({ type, title, onChange, value, options }) {
         type === "phone" ?
             <RequiredPhoneInput {...data} /> :
         type === "id" ?
-            <RequiredIdInput {...data} /> : null
+            <RequiredIdInput {...data} /> :
+        type === "textarea" ?
+            <RequiredTextarea {...data} /> : null
     );
 }
 

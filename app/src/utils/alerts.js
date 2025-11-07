@@ -8,23 +8,40 @@ const textHue = "#333333";
 const iconHue = "#777777";
 const blueHue = "#406088";
 
-export function questionAlert(title, message, onYes, onNo = () => {}) {
+export function questionAlert(title, message, onYes, onNo = () => {}, options = {}) {
+    const {
+        singleButton = false,
+        confirmText,
+        confirmColor,
+        denyText,
+        denyColor,
+        showDenyButton: showDenyButtonOption,
+        icon = "question",
+        iconColor = iconHue,
+    } = options;
+
+    const showDenyButton = singleButton ? false : (showDenyButtonOption ?? true);
+    const finalConfirmText = confirmText ?? (singleButton ? "Aceptar" : "Sí");
+    const finalConfirmColor = confirmColor ?? (singleButton ? blueHue : greenHue);
+    const finalDenyText = denyText ?? "No";
+    const finalDenyColor = denyColor ?? redHue;
+
     Swal.fire({
         title: title,
         text: message,
         color: textHue,
-        showDenyButton: true,
-        icon: "question",
-        iconColor: iconHue,
-        confirmButtonText: "Sí",
-        confirmButtonColor: greenHue,
-        denyButtonText: "No",
-        denyButtonColor: redHue,
-    }).then( (result) => {
-        if (result.isConfirmed) 
-            onYes();
+        icon: icon,
+        iconColor: iconColor,
+        showDenyButton: showDenyButton,
+        confirmButtonText: finalConfirmText,
+        confirmButtonColor: finalConfirmColor,
+        denyButtonText: finalDenyText,
+        denyButtonColor: finalDenyColor,
+    }).then((result) => {
+        if (result.isConfirmed)
+            onYes?.();
         else
-            onNo();
+            onNo?.();
     });
 }
 

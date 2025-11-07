@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Widgets.css"
 
-export function Producto({ nombre, precio, onAgregar, isAvailable }){
+export function Producto({ nombre, precio, descripcion, onAgregar, isAvailable }){
     const handleAgregar = () => {
         if (onAgregar) {
             onAgregar({ nombre, precio });
@@ -10,6 +10,11 @@ export function Producto({ nombre, precio, onAgregar, isAvailable }){
 
     return (
         <div className="frameProducto">
+            {descripcion && (
+                <div className="infoProducto" data-tooltip={descripcion}>
+                    i
+                </div>
+            )}
             <div className="productoInformacion">
                 <div className = "descripcion">
                     <p id="productoNombre">{nombre}</p>

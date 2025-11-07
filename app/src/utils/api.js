@@ -173,8 +173,8 @@ export const getDishData = async function(tableName) {
             return;
 
         for (const object of res) {
-            const { Name, Price, Availability } = object;
-            data.push([ Name, Price, Availability ]);
+            const { Name, Price, Availability, Description } = object;
+            data.push([ Name, Price, Availability, Description || '' ]);
         }
     });
 

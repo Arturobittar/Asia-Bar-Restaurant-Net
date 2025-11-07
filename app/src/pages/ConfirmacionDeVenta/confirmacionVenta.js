@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DashboardPage from "../../components/layout/dashboard-page.js";
 import './confirmacionVenta.css';
 import { TarjetaProductoInformacionVenta, TarjetaNota, TarjetaDelivery } from './widgetsConfirmacionVenta';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { generarTicket } from '../../utils/ticketImpresion';
 import { printOrderTicket } from '../../utils/ticket.js';
 import { obtenerTipoCambio } from '../../config/tipoCambio';
@@ -11,7 +11,7 @@ import { useOrder, useOrderClearer } from "../../hooks/order.js";
 
 import { getLastSaleID, onNewSale } from "../../utils/api.js";
 
-import { questionAlert, successAlert, infoAlert } from "../../utils/alerts.js";
+import { questionAlert, successAlert, infoAlert, errorAlert } from "../../utils/alerts.js";
 
 
 
@@ -24,6 +24,91 @@ function ContenidoConfirmacionVenta() {
         
     const total = products.reduce((sum, product) => sum + (product[3] * product[1]), 0);
     const totalBs = total * tipoCambio;
+
+    const navegar = useNavigate();
+    const pressTimerRef = useRef(null);
+    const longPressTriggeredRef = useRef(false);
+
+    const clearLongPressTimer = () => {
+        if (pressTimerRef.current) {
+            clearTimeout(pressTimerRef.current);
+            pressTimerRef.current = null;
+        }
+    };
+
+    const buildProductsArray = () => products.map((product) => ({
+        name: product[0],
+        price: product[1],
+        quantity: product[3],
+    }));
+
+    const registrarVenta = (id) => {
+        const productsArray = buildProductsArray();
+
+        onNewSale({
+            id: id,
+            clientId: order.clientID,
+            clientName: order.clientName,
+            type: order.type,
+            address: order.address,
+            deliverymanName: order.deliverymanName,
+            tableNumber: order.tableNumber,
+            note: order.note,
+            products: productsArray
+        }, () => {
+            orderClearer();
+            navegar('/Inicio');
+            successAlert("Venta Registrada", "Su venta ha sido exitosamente registrada en el sistema");
+        });
+    };
+
+    const finalizarVentaSinTicket = async () => {
+        if (!products.length) {
+            infoAlert("Carrito vacío", "Agrega productos antes de completar la venta.");
+            return;
+        }
+
+        try {
+            const ultimaVenta = await getLastSaleID();
+            const id = (ultimaVenta ?? 0) + 1;
+
+            questionAlert(
+                "Registrar venta sin ticket",
+                "No se imprimirá el ticket. ¿Deseas completar la venta?",
+                () => registrarVenta(id),
+                () => infoAlert("Información", "Puedes intentar imprimir el ticket si lo necesitas.")
+            );
+        } catch (error) {
+            console.error("Error al intentar finalizar sin ticket:", error);
+            errorAlert("Error", "No se pudo registrar la venta sin ticket. Inténtalo nuevamente.");
+        }
+    };
+
+    const LONG_PRESS_DELAY = 3000;
+
+    const handlePressStart = () => {
+        if (pressTimerRef.current) {
+            return;
+        }
+        longPressTriggeredRef.current = false;
+        pressTimerRef.current = setTimeout(() => {
+            longPressTriggeredRef.current = true;
+            finalizarVentaSinTicket();
+            pressTimerRef.current = null;
+        }, LONG_PRESS_DELAY);
+    };
+
+    const handlePressEnd = () => {
+        clearLongPressTimer();
+    };
+
+    const handleButtonClick = () => {
+        if (longPressTriggeredRef.current) {
+            longPressTriggeredRef.current = false;
+            return;
+        }
+        imprimirTicket();
+    };
     
     // Obtener el tipo de cambio al cargar el componente
     useEffect(() => {
@@ -41,34 +126,17 @@ function ContenidoConfirmacionVenta() {
         fetchTipoCambio();
     }, []);
 
+    useEffect(() => {
+        return () => {
+            clearLongPressTimer();
+        };
+    }, []);
+
     const afterPrintDialog = (id) => {
-
-        const productsArray = [];
-        products.map( (product) => productsArray.push({
-            name: product[0],
-            price: product[1],
-            quantity: product[3],
-        }));
-
         questionAlert(
             "Confirmación",
             "¿Se ha completado la venta e impreso el ticket correctamente?",
-            () => {
-                onNewSale({
-                    id: id,
-                    clientId: order.clientID,
-                    clientName: order.clientName,
-                    type: order.type,
-                    address: order.address,
-                    deliverymanName: order.deliverymanName,
-                    tableNumber: order.tableNumber,
-                    note: order.note,
-                    products: productsArray
-                }, () => {} ); 
-                orderClearer();
-                navegar('/Inicio');
-                successAlert("Venta Registrada", "Su venta ha sido exitosamente registrada en el sistema");
-            },
+            () => registrarVenta(id),
             () => {
                 infoAlert("Información", "Si desea registrar la venta, imprima el ticket y confírmerla nuevamente");
             }
@@ -76,8 +144,13 @@ function ContenidoConfirmacionVenta() {
     };
 
     const imprimirTicket = async () => {
+        if (!products.length) {
+            infoAlert("Carrito vacío", "Agrega productos antes de completar la venta.");
+            return;
+        }
+
         const ultimaVenta = await getLastSaleID();
-        const id = ultimaVenta + 1;
+        const id = (ultimaVenta ?? 0) + 1;
 
         const now = new Date();
         const date = now.toLocaleDateString('es-MX');
@@ -108,9 +181,6 @@ function ContenidoConfirmacionVenta() {
         await printOrderTicket(data, () => afterPrintDialog(id)); 
     };
 
-    const navegar = useNavigate()
-    const location = useLocation();
-    
     return (
     
     <div className='mainConfirmacionVenta'>
@@ -170,7 +240,13 @@ function ContenidoConfirmacionVenta() {
             <button 
                 id="btnContinuar" 
                 className="btnPedido" 
-                onClick={ () => imprimirTicket() }
+                onMouseDown={handlePressStart}
+                onMouseUp={handlePressEnd}
+                onMouseLeave={handlePressEnd}
+                onTouchStart={handlePressStart}
+                onTouchEnd={handlePressEnd}
+                onTouchCancel={handlePressEnd}
+                onClick={handleButtonClick}
             >
                 Completar venta
             </button>

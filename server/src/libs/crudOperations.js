@@ -198,7 +198,7 @@ export async function getSaleSummary(req, res) {
                 s.ClientName, 
                 s.Type, 
                 Sum(sd.Quantity * sd.Price) As Total,
-                s.TableNumber 
+                s.TableNumber
             FROM 
                 Sales s 
                 INNER JOIN SaleDetails sd ON s.ID = sd.ID

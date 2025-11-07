@@ -68,11 +68,11 @@
     justify-content: space-between;
     font-size: 18px;
     font-weight: bold;
-    color: var(--red-hue);
+    color: black;
     margin: 0;
 }
 
 .grand-total span {
     font-size: 20px;
-    color: var(--red-hue);
+    color: black;
 }

@@ -173,7 +173,8 @@ export function useProducts() {
         if (oldProductList.find( (found) => found[0] === product[0] ) )
             return;
 
-        setProducts([...oldProductList, [...product, 1] ]);
+        const [name, price, availability] = product;
+        setProducts([...oldProductList, [name, price, availability, 1] ]);
     };
 
     const increase = (productName) => {

@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { categories, useCategory, useDishes, useProducts, useOrderChanger, useOrder } from "../../hooks/order.js";
 
 import { questionAlert } from "../../utils/alerts.js";
+import { obtenerTipoCambio } from "../../config/tipoCambio";
 
 const CategoryTitles = ["Menú", "Contornos", "Productos", "Todos"];
 
@@ -23,6 +24,10 @@ function ContenidoPedido() {
 
     const [nota, setNota] = useState(false);
     const [textoNota, setTextoNota] = useState(order.note || '');
+    const [tipoCambio, setTipoCambio] = useState(0);
+
+    const totalPedido = products.reduce((acc, product) => acc + (product[1] || 0) * (product[3] || 0), 0);
+    const totalBolivares = totalPedido * (Number.isFinite(tipoCambio) ? tipoCambio : 0);
 
     const orderChanger = useOrderChanger(products, textoNota);
 
@@ -68,6 +73,21 @@ function ContenidoPedido() {
         setNota(!nota)
     }
 
+    useEffect(() => {
+        const fetchTipoCambio = async () => {
+            try {
+                const tasa = await obtenerTipoCambio();
+                const tasaNumerica = Number(tasa);
+                setTipoCambio(Number.isFinite(tasaNumerica) ? tasaNumerica : 0);
+            } catch (error) {
+                console.error('Error al obtener el tipo de cambio:', error);
+                setTipoCambio(0);
+            }
+        };
+
+        fetchTipoCambio();
+    }, []);
+
     return (
             
         <div className="mainPedido">
@@ -99,6 +119,7 @@ function ContenidoPedido() {
                                 onAgregar={ () => addFirst(dish) }
                                 nombre={dish[0]}
                                 precio={dish[1]}
+                                descripcion={dish[3]}
                                 isAvailable={dish[2]}
                             />
                         ))}
@@ -128,10 +149,10 @@ function ContenidoPedido() {
 
                     
 
+
                     <h3 className="tituloPedido">Pedido</h3>
 
                     <div className="scrollFrame" id="scrollFramePedido">
-
                         {products.map((product) => (
                             <WidgethPedido 
                                 key={product[0]}
@@ -144,17 +165,28 @@ function ContenidoPedido() {
                         ))}
                     </div>
 
-                    {!nota && (
+                    <div className="totalPedidoFooter">
+                        {!nota && (
+                            <button id="nota" onClick={() => setNota(true)}>+ | Agregar Nota</button>
+                        )}
 
-                        <button id="nota" onClick={()=> setNota(true)}>+ | Agregar Nota</button>
-
-                    )}
+                        <div className="resumenTotalPedido">
+                            <div className="resumenTotalPedidoLinea">
+                                <span className="resumenTotalPedidoTitulo">Total:</span>
+                                <span className="resumenTotalPedidoMonto">${totalPedido.toFixed(2)}</span>
+                            </div>
+                            <div className="resumenTotalPedidoLinea">
+                                <span className="resumenTotalPedidoTitulo">Bs.:</span>
+                                <span className="resumenTotalPedidoMonto">{totalBolivares.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
                     
                     {nota && (      
                         
                         <div className="modalAgregarNota">
 
-                            <button className="cerrarModalAgregarNota" onClick={()=> setNota(false)}>-</button>
+                           
                             <textarea 
                                 className="inputNota" 
                                 placeholder="..."
@@ -197,6 +229,17 @@ function ContenidoPedido() {
                     id="btnContinuar" 
                     className="btnPedido" 
                     onClick={ () => {
+                        if (products.length === 0) {
+                            questionAlert(
+                                "Pedido vacío",
+                                "Debe agregar al menos un producto antes de continuar",
+                                () => {},
+                                undefined,
+                                { singleButton: true, confirmText: "Aceptar" }
+                            );
+                            return;
+                        }
+
                         orderChanger();
                         navigate('/confirmacion-venta');
                     }}
@@ -211,7 +254,7 @@ function ContenidoPedido() {
                         id="btnEsconder"
                         onClick={toggleMostrarProductor}>
                             
-                            {isVisible ? "▼":"▲"}
+                            {isVisible ? "":"Haz tu pedido"}
 
             </button>
 

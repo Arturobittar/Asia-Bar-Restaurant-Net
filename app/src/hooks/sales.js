@@ -26,7 +26,7 @@ export function useSaleID() {
 export function useEditSaleFormFields() {
     const id = useSaleID(); 
     const saleProducts = usePairs();
-    const [values, setters] = useFormFields(6); // Aumentado a 6: ClientId, ClientName, Type, Address, DeliverymanName, TableNumber
+    const [values, setters] = useFormFields(7); // ClientId, ClientName, Type, Address, DeliverymanName, TableNumber, Note
 
     let areProductsInitialized = false;
 
@@ -46,6 +46,7 @@ export function useEditSaleFormFields() {
             setters[3](fetched.Address || '');
             setters[4](fetched.DeliverymanName || '');
             setters[5](fetched.TableNumber || '');
+            setters[6](fetched.Note || '');
 
             const products = Array.isArray(fetched.products) ? fetched.products : [];
 
@@ -73,7 +74,7 @@ export function useEditSaleFormFields() {
     return [values, setters, saleProducts, onAddProduct, onDeleteProduct];
 }
 
-export function useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, products) {
+export function useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, note, products) {
     const navigate = useNavigate();
 
     const productsArray = products.reduce((array, { value }) => [...array, {
@@ -90,6 +91,7 @@ export function useOnEditContinue(id, client, type, address, deliverymanName, ta
         address: address || null,
         deliverymanName: deliverymanName || null,
         tableNumber: tableNumber || null,
+        note: note || null,
         products: productsArray || []
     };
 
@@ -169,6 +171,7 @@ export function useActionButtons() {
                 productsArray,
                 fetched.DeliverymanName || null,
                 fetched.Address || null,
+                fetched.TableNumber || null,
                 fetched.Note || null
             );
         };
