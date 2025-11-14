@@ -102,15 +102,19 @@ export function SearchInputBox({ onChange, value }) {
     );
 }
 
-function Selector({ title, options, onChange, value, hasMargin = true }) {
+function Selector({ title, options, onChange, value, hasMargin = true, listSize, className }) {
+    const selectProps = listSize && listSize > 1 ? { size: listSize } : {};
+    const combinedClassName = ['selector', className].filter(Boolean).join(' ');
+
     return(
         <InputBoxWrapper title={title} hasMargin={hasMargin}>
             <select 
-                className="selector" 
+                className={combinedClassName} 
                 id={ title } 
                 value={ value }
                 onChange={ (e) => onChange(e.target.value) }
                 required
+                {...selectProps}
             >
                 { options.map( (option, i) => <option key={`${option}-${i}`} value={option}>{option}</option> ) }
             </select>
@@ -118,7 +122,7 @@ function Selector({ title, options, onChange, value, hasMargin = true }) {
     );
 }
 
-function RequiredCombo({ title, options, onChange, value, defaultValue, onSetDefault, hasMargin = true }) {
+function RequiredCombo({ title, options, onChange, value, defaultValue, onSetDefault, hasMargin = true, listSize, className }) {
     useEffect(() => {
         onSetDefault(defaultValue);
     }, []);
@@ -130,11 +134,13 @@ function RequiredCombo({ title, options, onChange, value, defaultValue, onSetDef
             onChange={onChange}
             value={value}
             hasMargin={hasMargin}
+            listSize={listSize}
+            className={className}
         />
     );
 }
 
-export function RequiredSelector({ title, options, onChange, value, hasMargin = true }) {
+export function RequiredSelector({ title, options, onChange, value, hasMargin = true, listSize, className }) {
     const defaultValue = value || options[0];
 
     return( 
@@ -146,11 +152,13 @@ export function RequiredSelector({ title, options, onChange, value, hasMargin = 
             defaultValue={defaultValue}
             value={defaultValue}
             hasMargin={hasMargin}
+            listSize={listSize}
+            className={className}
         />
     );
 }
 
-export function RequiredBoolean({ title, onChange, value }) {
+export function RequiredBoolean({ title, onChange, value, listSize, className }) {
     const defaultValue = value || 0;
     const options = ["No", "Sí"];
 
@@ -162,6 +170,8 @@ export function RequiredBoolean({ title, onChange, value }) {
             onSetDefault={onChange}
             defaultValue={defaultValue}
             value={options[defaultValue]}
+            listSize={listSize}
+            className={className}
         />
     );
 };
@@ -302,13 +312,15 @@ export function RequiredIdInput({ title, value, onChange }) {
     );
 }
 
-export function RequiredInput({ type, title, onChange, value, options }) {
+export function RequiredInput({ type, title, onChange, value, options, selectorProps = {} }) {
     const data = {
-        title: title,
-        onChange: onChange,
-        value: value,
-        options: options
+        title,
+        onChange,
+        value,
+        options
     };
+
+    const { listSize, className } = selectorProps;
 
     return( 
         type === "text" ?
@@ -318,9 +330,9 @@ export function RequiredInput({ type, title, onChange, value, options }) {
         type === "int" ? 
             <RequiredNumberBox {...data} /> :
         type === "combo" ?
-            <RequiredSelector {...data} /> :
+            <RequiredSelector {...data} listSize={listSize} className={className} /> :
         type === "bool" ?
-            <RequiredBoolean {...data} /> :
+            <RequiredBoolean {...data} listSize={listSize} className={className} /> :
         type === "pseudocombo" ? 
             <RequiredOptionalSelector {...data} /> :
         type === "city" ?

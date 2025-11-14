@@ -5,6 +5,7 @@ export const fieldTypes = ["number", "int", "combo", "pseudocombo", "bool", "pho
 export const saleOptions = ["Comer Aquí", "Para llevar", "Delivery"];
 export const cityOptions = ["Barcelona", "Lechería", "Puerto la Cruz", "Guanta"];
 export const userRoles = ["Administrador", "Usuario"];
+export const tableOptions = Array.from({ length: 20 }, (_, index) => `mesa ${index + 1}`);
 
 export const phonePrefixes = ["0414", "0424", "0416", "0426", "0412", "0422"];
 export const idTypes = ["V-", "J-", "E-"];

@@ -70,48 +70,78 @@ export function InformacionDelProductoModal({datosProducto}){
 }
 
 
-export function InformacionDelPedidoModal({datosPedido}){
+export function InformacionDelPedidoModal({ datosPedido = {} }){
 
+    const {
+        numeroPedido,
+        nombreComprador,
+        idComprador,
+        tipoDeCompra,
+        nombreRepartidor,
+        direccionEntrega,
+        mesa,
+        nota,
+        productos = [],
+        total = 0
+    } = datosPedido || {};
+
+    const tipoLower = tipoDeCompra?.toLowerCase() || "";
+    const esDelivery = tipoLower.includes("delivery");
+    const esComerAqui = tipoLower.includes("comer") || tipoLower.includes("aqu");
 
     return(
 
         <div className="mainInformacionDelPedidoModal">
 
-            <h2>Informacion del pedido</h2>
-
-            <h3 className="nombreCompradorModal">{datosPedido.nombreComprador}</h3>
-            <div className="labelInformacionPedido">{datosPedido.idComprador}</div>
-           
-            <div className="labelInformacionPedido">Tipo de pedido: {datosPedido.tipoDeCompra}</div>
-
-            <div className={`informacionDelivery ${datosPedido.tipoDeCompra === "Delivery" ? "informacionVisibleModal":""}`}>
-                <h3>{datosPedido.nombreRepartidor}</h3>
-                <div className="labelInformacionPedido">{datosPedido.direccionEntrega}</div>
-
+            <div className="modalPedidoHeader">
+                <div>
+                    <h2>Información del pedido</h2>
+                    {numeroPedido && <p className="numeroPedido">Orden #{numeroPedido}</p>}
+                </div>
             </div>
 
-            
-            <div className={`informacionComerAqui ${datosPedido.tipoDeCompra === "Comer Aqui" ? "informacionVisibleModal":""}`}>
-                
-                <h3>{datosPedido.nombreMesero}</h3>
-                <div className="labelInformacionPedido">{datosPedido.mesa}</div>
+            {nombreComprador && <h3 className="nombreCompradorModal">{nombreComprador}</h3>}
+            {idComprador && <div className="labelInformacionPedido">{idComprador}</div>}
+            {tipoDeCompra && <div className="labelInformacionPedido">Tipo de pedido: {tipoDeCompra}</div>}
 
-            </div>
+            {esDelivery && (
+                <div className={`informacionDelivery informacionVisibleModal`}>
+                    {nombreRepartidor && <h3>{nombreRepartidor}</h3>}
+                    {direccionEntrega && <div className="labelInformacionPedido">{direccionEntrega}</div>}
+                </div>
+            )}
 
-            <h3 className="tituloPedidoModal">Pedido:</h3>
+            {esComerAqui && (
+                <div className={`informacionComerAqui informacionVisibleModal`}>
+                    <h3>Mesa asignada</h3>
+                    {mesa && <div className="labelInformacionPedido">{mesa}</div>}
+                </div>
+            )}
+
+            <h3 className="tituloPedidoModal">Pedido</h3>
             <div className="scrollFramePedidoModal">
-
-                <TarjetaProductoInformacionVenta/>
-                <TarjetaProductoInformacionVenta/>
-                <TarjetaProductoInformacionVenta/>
-                <TarjetaProductoInformacionVenta/>
-                <TarjetaProductoInformacionVenta/>
-                <TarjetaProductoInformacionVenta/>
-                <TarjetaProductoInformacionVenta/>
-
+                {productos.length > 0 ? (
+                    productos.map((producto, index) => (
+                        <TarjetaProductoInformacionVenta
+                            key={`producto-${producto.nombre}-${index}`}
+                            nombre={producto.nombre}
+                            cantidad={producto.cantidad}
+                            precio={producto.precio}
+                        />
+                    ))
+                ) : (
+                    <p className="mensajePedidoVacio">Sin productos registrados</p>
+                )}
             </div>
 
-            <div className="valorTotalPedidoModal">Valor total: {datosPedido.valorTotalDePedido}$</div>
+            {nota && (
+                <div className="notaPedido">
+                    <span>Nota:</span>
+                    <p>{nota}</p>
+                </div>
+            )}
+
+            <div className="valorTotalPedidoModal">Valor total: ${Number(total || 0).toFixed(2)}</div>
 
         </div>
 

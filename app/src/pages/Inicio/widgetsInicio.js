@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./widgetsInicioCss/Mesa.css"
 /*import "./widgetsInicioCss/RecienAgregado.css"*/
 import "./widgetsInicioCss/MasVendidos.css"
@@ -6,6 +6,8 @@ import "./widgetsInicioCss/PedidoTicket.css"
 import {InformacionDelProductoModal, InformacionDelPedidoModal} from "./modalesInicio.js"
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../config/routes.js'; 
+import { updateTableStatus, getSaleDetails } from '../../utils/api.js';
+import { errorAlert } from "../../utils/alerts.js";
 
 import { Info, ReceiptText } from "lucide-react";
 
@@ -40,90 +42,205 @@ const DatosPedidoPrueba = {
 
 }
 
-export function Mesa({nombre, onOpen}){
-
-   const [estado,setEstado] = useState("desocupada");
-   const [temporizador,setTemporizador] = useState(0);
-   const [mostrarOpciones, setMostrarOpciones] = useState(false);
+export function Mesa({ nombre, data, onOpen, onRefresh }){
 
    const navigate = useNavigate();
+   const [mostrarOpciones, setMostrarOpciones] = useState(false);
+   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+   const [isUpdating, setIsUpdating] = useState(false);
+   const [isLoadingInfo, setIsLoadingInfo] = useState(false);
 
-   const handleOrdenar = (e) => {
-      e.stopPropagation();
-      navigate(routes['Informacion de Venta'], { 
-         state: { 
-            fromTable: true, 
-            tableName: nombre 
-         } 
-      });
-  };
-   
+   const estado = data?.Status ?? "desocupada";
+   const timerStart = useMemo(() => data?.TimerStart ? new Date(data.TimerStart) : null, [data?.TimerStart]);
+   const deliveryTimeSeconds = data?.DeliveryTimeSeconds ?? null;
+   const saleId = data?.SaleID ?? null;
+   const normalizedName = nombre?.toLowerCase();
 
-   const formatearTimer = (totalSegundos) => {
+   const estadoLabel = {
+      desocupada: "Desocupada",
+      ocupada: "Ocupada",
+      ordenada: "Orden lista",
+      consumiendo: "Consumiento"
+   }[estado] || "Desconocida";
+
+   const formatearTimer = (totalSegundos = 0) => {
       const horas = Math.floor(totalSegundos/3600);
       const minutos = Math.floor((totalSegundos%3600)/60);
       const segundos = totalSegundos%60;
       return  `${horas.toString().padStart(2,"0")}:${minutos.toString().padStart(2,"0")}:${segundos.toString().padStart(2,"0")}`;
    };
 
-   
    useEffect(()=>{
-      let intervalo;
-      if (estado === "ordenada"){
-         intervalo = setInterval(()=>{
-            setTemporizador((prev)=> prev +1);
-         },1000);
-      } else {
-         setTemporizador(0);
+      if (estado !== "ordenada" || !timerStart || Number.isNaN(timerStart.getTime())){
+         setElapsedSeconds(0);
+         return;
       }
+
+      const tick = () => {
+         const diff = Math.max(0, Math.floor((Date.now() - timerStart.getTime())/1000));
+         setElapsedSeconds(diff);
+      };
+
+      tick();
+      const intervalo = setInterval(tick, 1000);
       return () => clearInterval(intervalo);
+   }, [estado, timerStart]);
 
-
-   }, [estado]);
-
-   const clickMesa = () =>{
-      console.log("mesa clickeada, estado:",estado);
-      console.log("antes de cambiar a mostrar opciones:",mostrarOpciones);
-      setMostrarOpciones(!mostrarOpciones);
-      console.log("despues de mostra opciones", !mostrarOpciones);
+   const toggleMenu = () => {
+      if (isUpdating) return;
+      setMostrarOpciones(prev => !prev);
    };
-   const cambiarEstado = (nuevoEstado) => {
-      setEstado(nuevoEstado);
-      setMostrarOpciones(false);
+
+   const sendStatusUpdate = async (status, extraPayload = {}) => {
+      if (!normalizedName) return;
+      setIsUpdating(true);
+      try {
+         await updateTableStatus(normalizedName, { status, ...extraPayload });
+         await onRefresh?.();
+      } catch (error) {
+         console.error("No se pudo actualizar la mesa", error);
+         errorAlert("Error", "No se pudo actualizar la mesa. Inténtalo nuevamente.");
+      } finally {
+         setIsUpdating(false);
+         setMostrarOpciones(false);
+      }
    };
-   
-   
+
+   const handleOrdenar = async (e) => {
+      e.stopPropagation();
+
+      if (estado === "consumiendo") {
+         await sendStatusUpdate("ocupada", { saleId: null });
+      }
+
+      navigate(routes['Informacion de Venta'], { 
+         state: { 
+            fromTable: true, 
+            tableName: nombre 
+         } 
+      });
+   };
+
+   const handleOcupar = async (e) => {
+      e.stopPropagation();
+      await sendStatusUpdate("ocupada", { saleId: null });
+   };
+
+   const handleDesocupar = async (e) => {
+      e.stopPropagation();
+      await sendStatusUpdate("desocupada");
+   };
+
+   const handlePedidoEntregado = async (e) => {
+      e.stopPropagation();
+      await sendStatusUpdate("consumiendo");
+   };
+
+   const handleInfo = async (e) => {
+      e.stopPropagation();
+
+      if (!saleId) {
+         errorAlert("Pedido", "Esta mesa no tiene una venta vinculada todavía.");
+         return;
+      }
+
+      setIsLoadingInfo(true);
+      try {
+         const fetched = await getSaleDetails(saleId);
+         if (!fetched) {
+            throw new Error("No se encontraron datos de la venta");
+         }
+
+         const products = Array.isArray(fetched.products) ? fetched.products : [];
+         const formattedProducts = products.map((product) => ({
+            nombre: product.Name || "Producto",
+            cantidad: product.Quantity || 0,
+            precio: Number.parseFloat(product.Price || 0)
+         }));
+
+         const totalCalculado = formattedProducts.reduce((sum, prod) => sum + (prod.precio * prod.cantidad), 0);
+
+         onOpen?.(
+            <InformacionDelPedidoModal
+               datosPedido={{
+                  numeroPedido: fetched.ID,
+                  nombreComprador: fetched.ClientName,
+                  idComprador: fetched.ClientIdDocument,
+                  tipoDeCompra: fetched.Type,
+                  nombreRepartidor: fetched.DeliverymanName,
+                  direccionEntrega: fetched.Address,
+                  mesa: fetched.TableNumber,
+                  nota: fetched.Note,
+                  productos: formattedProducts,
+                  total: totalCalculado
+               }}
+            />
+         );
+      } catch (error) {
+         console.error("No se pudo obtener la información del pedido", error);
+         errorAlert("Pedido", "No se pudo cargar la información del pedido. Inténtalo nuevamente.");
+      } finally {
+         setIsLoadingInfo(false);
+      }
+   };
+
+   const mostrarMenu = mostrarOpciones && !isUpdating;
+
    return (
-      <div className={`widgetMesa ${estado}`} onClick={clickMesa}>
-         <p className="nombreMesa">{nombre}</p>
-         {estado === "ordenada" && <p className="timer">🕐 {formatearTimer(temporizador)} </p>}
+      <div className={`widgetMesa ${estado}`} onClick={toggleMenu}>
+         <div className="mesaHeader">
+            <span className="estadoMesa">{estadoLabel}</span>
+            {saleId && <span className="ventaTag">Orden #{saleId}</span>}
+         </div>
 
-         {mostrarOpciones && (
-            <div className="menuOpciones">
+         <div className="mesaBody">
+            <p className="nombreMesa">{nombre}</p>
+            {estado === "ordenada" && (
+               <p className="timer">⏱ {formatearTimer(elapsedSeconds)}</p>
+            )}
+         </div>
+
+         {estado === "consumiendo" && Number.isFinite(deliveryTimeSeconds) && (
+            <p className="deliveryTime">Tiempo hasta entrega: {formatearTimer(deliveryTimeSeconds)}</p>
+         )}
+
+         {mostrarMenu && (
+            <div className="menuOpciones" onClick={(e) => e.stopPropagation()}>
                {estado === "desocupada" && (
-                  <button className="opcionMesa" onClick={() => cambiarEstado("ocupada")}>Ocupada</button>
+                  <button className="opcionMesa" type="button" onClick={handleOcupar} disabled={isUpdating}>Ocupar</button>
                )}
+
                {estado === "ocupada" && (
                   <>
-                     <button className="opcionMesa" onClick={() => cambiarEstado("desocupada")}>Desocupar</button>
-                     <button
-                        className="opcionMesa"
-                        type="button"
-                        onClick={handleOrdenar} // <-- Aquí usas la función
-                     >
-                        Ordenar
+                     <button className="opcionMesa" type="button" onClick={handleOrdenar} disabled={isUpdating}>Ordenar</button>
+                     <button className="opcionMesa" type="button" onClick={handleDesocupar} disabled={isUpdating}>Desocupar</button>
+                  </>
+               )}
+
+               {estado === "ordenada" && (
+                  <>
+                     <button className="opcionMesa" type="button" onClick={handlePedidoEntregado} disabled={isUpdating}>Pedido entregado</button>
+                     <button className="opcionMesa" type="button" onClick={handleDesocupar} disabled={isUpdating}>Desocupar</button>
+                     <button className="opcionMesa info" type="button" onClick={handleInfo}>
+                        <Info size={18} />
                      </button>
                   </>
                )}
-               {estado === "ordenada" && (
+
+               {estado === "consumiendo" && (
                   <>
-                     <button className="opcionMesa" onClick={() => cambiarEstado("ocupada")}>Orden completa</button>
-                     <button className="opcionMesa" onClick={() => cambiarEstado("desocupada")}>Desocupar</button>
-                     <button className="opcionMesa" onClick={() => onOpen(<InformacionDelPedidoModal datosPedido={DatosPedidoPrueba}/>)}><Info size={20} /></button>
+                     <button className="opcionMesa" type="button" onClick={handleOrdenar} disabled={isUpdating}>Ordenar</button>
+                     <button className="opcionMesa" type="button" onClick={handleDesocupar} disabled={isUpdating}>Desocupar</button>
                   </>
                )}
+            </div>
+         )}
 
-</div>
+         {(isUpdating || isLoadingInfo) && (
+            <div className="mesaUpdatingOverlay" aria-live="polite">
+               <span className="mesaSpinner" aria-hidden="true"></span>
+               <span className="mesaUpdatingText">{isUpdating ? "Actualizando…" : "Cargando info…"}</span>
+            </div>
          )}
       </div>
    );

@@ -9,7 +9,8 @@ import { obtenerTipoCambio } from '../../config/tipoCambio';
 
 import { useOrder, useOrderClearer } from "../../hooks/order.js";
 
-import { getLastSaleID, onNewSale } from "../../utils/api.js";
+import { getLastSaleID, onNewSale, updateTableStatus } from "../../utils/api.js";
+import { saleOptions } from "../../config/tables.js";
 
 import { questionAlert, successAlert, infoAlert, errorAlert } from "../../utils/alerts.js";
 
@@ -44,6 +45,8 @@ function ContenidoConfirmacionVenta() {
 
     const registrarVenta = (id) => {
         const productsArray = buildProductsArray();
+        const normalizedTableName = order.tableNumber?.trim().toLowerCase();
+        const isDineInSale = order.type === saleOptions[0] && Boolean(normalizedTableName);
 
         onNewSale({
             id: id,
@@ -55,7 +58,16 @@ function ContenidoConfirmacionVenta() {
             tableNumber: order.tableNumber,
             note: order.note,
             products: productsArray
-        }, () => {
+        }, async () => {
+            if (isDineInSale) {
+                try {
+                    await updateTableStatus(normalizedTableName, { status: "ordenada", saleId: id });
+                } catch (error) {
+                    console.error("No se pudo actualizar el estado de la mesa", error);
+                    errorAlert("Mesas", "La venta se registró, pero no se pudo actualizar la mesa. Hazlo manualmente desde Inicio.");
+                }
+            }
+
             orderClearer();
             navegar('/Inicio');
             successAlert("Venta Registrada", "Su venta ha sido exitosamente registrada en el sistema");

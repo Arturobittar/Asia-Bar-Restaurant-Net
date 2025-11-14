@@ -1,4 +1,4 @@
- import react, { useState, useEffect } from "react";
+ import react, { useState, useEffect, useCallback } from "react";
 import DashboardPage from "../../components/layout/dashboard-page.js";
 import "./Inicio.css"
 import { ModalInformacionDelProducto, ModalInicio, InformacionDelProductoModal } from "./modalesInicio";
@@ -7,7 +7,8 @@ import { Mesa, RecienAgregado, MasVendidos, PedidoTicket } from "./widgetsInicio
 
 import { useTicketPrinter } from '../../hooks/home.js';
 
-import { getTopProducts, getTableData, getRegisterData, getSaleDetails } from '../../utils/api.js';
+import { getTopProducts, getTableData, getRegisterData, getSaleDetails, getTablesStatus } from '../../utils/api.js';
+import { tableOptions } from '../../config/tables.js';
 
 import { saleAlert } from '../../utils/alerts.js';
 import { errorAlert } from "../../utils/alerts";
@@ -16,6 +17,7 @@ function Inicio(){
 
     const [mostRecentProducts, setMostRecentProducts] = useState([]);
     const [topProducts, setTopProducts] = useState([]);
+    const [tablesStatus, setTablesStatus] = useState({});
     const onPrint = useTicketPrinter();
 
     useEffect(() => {
@@ -32,6 +34,31 @@ function Inicio(){
 
         fetchProducts();
     }, []);
+
+    const refreshTablesStatus = useCallback(async () => {
+        try {
+            const fetched = await getTablesStatus();
+            const mapped = fetched.reduce((acc, table) => {
+                if (!table?.Name) {
+                    return acc;
+                }
+                acc[table.Name.toLowerCase()] = table;
+                return acc;
+            }, {});
+            setTablesStatus(mapped);
+        } catch (error) {
+            console.error("No se pudieron cargar las mesas", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        refreshTablesStatus();
+    }, [refreshTablesStatus]);
+
+    useEffect(() => {
+        const interval = setInterval(refreshTablesStatus, 30000);
+        return () => clearInterval(interval);
+    }, [refreshTablesStatus]);
 
     const [ModalAbierto, setModalAbierto] = useState(false);
     const [modalContenido, setModalContenido] = useState("");
@@ -132,27 +159,15 @@ function Inicio(){
                     <h2 className="tituloframe">Mesas</h2>
                     <div className="scrollFrameMesas">
 
-                       
-                        <Mesa nombre={"mesa 1"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 2"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 3"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 4"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 5"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 6"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 7"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 8"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 9"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 10"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 11"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 12"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 13"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 14"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 15"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 16"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 17"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 18"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 19"} onOpen={onOpen}/>
-                        <Mesa nombre={"mesa 20"} onOpen={onOpen}/>
+                        {tableOptions.map((tableName) => (
+                            <Mesa
+                                key={tableName}
+                                nombre={tableName}
+                                data={tablesStatus[tableName.toLowerCase()]}
+                                onOpen={onOpen}
+                                onRefresh={refreshTablesStatus}
+                            />
+                        ))}
                            
                     
 

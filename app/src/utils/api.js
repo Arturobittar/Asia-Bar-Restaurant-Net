@@ -85,6 +85,29 @@ export const getTableData = async function(tableName, searchQuery = null) {
     return data;
 }
 
+export const getTablesStatus = async function() {
+    let data = [];
+
+    await api_fetch({
+        endpoint: "tables",
+        method: 'GET',
+    }).then(res => { data = res; })
+
+    return data;
+}
+
+export const updateTableStatus = async function(name, payload) {
+    if (!name) {
+        return;
+    }
+
+    return api_fetch({
+        endpoint: `tables/${encodeURIComponent(name)}`,
+        method: 'PUT',
+        body: payload,
+    });
+}
+
 export const onCreate = function(e, tableName, getData, onDone) {
     e.preventDefault(); 
 

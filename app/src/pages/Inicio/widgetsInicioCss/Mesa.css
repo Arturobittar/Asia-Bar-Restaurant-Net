@@ -2,29 +2,74 @@
 
 
 .widgetMesa{
-
-
     width: 200px;
     height: 200px;
-    border-radius: 5px;
-    border: solid #111 1px;
+    border-radius: 8px;
+    border: 1px solid #333;
     cursor: pointer;
-    text-align: center;
     pointer-events: auto;
     position: relative;
-
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 16px 12px 18px;
     box-sizing: border-box;
-    
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.widgetMesa:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.mesaHeader {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-height: 50px;
+}
+
+.estadoMesa {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.ventaTag {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.timer {
+    font-size: 0.9rem;
+    margin: 4px 0 4px;
+}
+
+.deliveryTime {
+    font-size: 0.85rem;
+    color: #222;
+    margin-top: auto;
+}
+
+.mesaBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    width: 100%;
+    padding-top: 8px;
 }
 
 .nombreMesa{
-
-    margin-top: 30%;
-    font-size: 30px;
-
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
 }
 
 
@@ -64,6 +109,42 @@
 
     z-index: 10;
 
+}
+
+.mesaUpdatingOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.82);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #222;
+    border-radius: 5px;
+    z-index: 20;
+}
+
+.mesaSpinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid rgba(0,0,0,0.15);
+    border-top-color: #ff7a00;
+    animation: mesaSpin 0.9s linear infinite;
+}
+
+@keyframes mesaSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.mesaUpdatingText {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 

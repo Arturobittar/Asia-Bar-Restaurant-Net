@@ -1,45 +1,107 @@
 /* === Sección Pedido (Main) === */
 .scrollFramePedidoModal{
     width: 100%;
-    height: 300px;
+    max-height: 310px;
     overflow-y: auto;
 
-    background: #ddd;
-    border-radius: 10px;
-    padding: 20px;
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 18px;
     box-sizing: border-box;
+    box-shadow: inset 0 0 0 1px #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* === Layout general ==== */
+.mainInformacionDelPedidoModal {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: #111;
+}
+
+.modalPedidoHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.modalPedidoHeader h2 {
+    margin: 0;
+    font-size: 1.7rem;
+}
+
+.modalPedidoHeader .numeroPedido {
+    margin: 4px 0 0;
+    color: #777;
+    font-weight: 500;
+}
+
+.badgeMesa {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.nombreCompradorModal {
+    margin: 4px 0;
+    font-size: 1.3rem;
+}
+
+.labelInformacionPedido {
+    color: #4d4d4d;
+    border-bottom: 1px solid #e1e1e1;
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
 }
 
 /* === Frames de Pedido === */
 .informacionDelivery,
-.informacionComerAqui{
-    margin-top: 10px;
-    margin-bottom: 20px;
+.informacionComerAqui {
+    background: #f8f8f8;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
     display: none;
 }
 
-.informacionVisibleModal{
+.informacionVisibleModal {
     display: block;
 }
 
-/* === Elementos de Pedido === */
-.tituloPedidoModal{
-    margin-top: 50px;
+.tituloPedidoModal {
+    margin-top: 16px;
+    font-size: 1.1rem;
 }
 
-.nombreCompradorModal{
-    margin-top: 20px;
-    font-size: 20px;
+.mensajePedidoVacio {
+    color: #888;
+    text-align: center;
+    margin: 40px 0;
 }
 
-.labelInformacionPedido{
-    color: #555;
-    border-bottom: 1px solid #aaa;
-    margin-top: 10px;
+.notaPedido {
+    background: #fff7e6;
+    border: 1px solid #ffd18a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
 }
 
-.valorTotalPedidoModal{
+.notaPedido span {
+    font-weight: 600;
+}
+
+.valorTotalPedidoModal {
     text-align: right;
-    margin-top: 20px;
-    font-size: 18px;
+    margin-top: 12px;
+    font-size: 1.2rem;
+    font-weight: 600;
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useClientFetchData, useOnDetailsSubmit, useDetailsGetter, useNewClientFormFields } from "../hooks/order.js";
 import { useFormFields } from "../hooks/form.js";
@@ -10,7 +10,7 @@ import { OrderDetailsContent } from "../components/features/order/details.js";
 
 import { routes } from '../config/routes.js';
 import { getTableData } from '../utils/api.js';
-import { saleOptions } from '../config/tables.js';
+import { saleOptions, tableOptions } from '../config/tables.js';
 
 export default function OrderDetails() {
     const location = useLocation();
@@ -24,20 +24,32 @@ export default function OrderDetails() {
     const [newClientValues, newClientSetters, getNewClientData] = useNewClientFormFields(clientId);
     const [typeValues, typeSetters] = useFormFields(2);
     const [tableValue, setTableValue] = useState(tableName || "");
+    const [isTableLocked, setIsTableLocked] = useState(Boolean(tableName));
+
+    const tableOptionsList = useMemo(() => {
+        const tableSet = new Set(tableOptions);
+        if (tableName) tableSet.add(tableName);
+        if (tableValue) tableSet.add(tableValue);
+        return Array.from(tableSet);
+    }, [tableName, tableValue]);
     
     // Preseleccionar tipo "Comer Aquí" si viene desde una mesa
     useEffect(() => {
         if (fromTable) {
             typeSetters[0](saleOptions[0]); // "Comer Aquí"
+            if (tableName) {
+                setTableValue(tableName);
+                setIsTableLocked(true);
+            }
         }
-    }, [fromTable]);
+    }, [fromTable, tableName, typeSetters]);
     
     // Establecer la dirección del cliente encontrado cuando cambia
     useEffect(() => {
         if (!isNewClient && foundAddress) {
             typeSetters[1](foundAddress);
         }
-    }, [foundAddress, isNewClient]);
+    }, [foundAddress, isNewClient, typeSetters]);
     
     const [deliverymanValue, setDeliverymanValue] = useState("");
     const [deliverymenOptions, setDeliverymenOptions] = useState([]);
@@ -72,6 +84,8 @@ export default function OrderDetails() {
                     deliverymenOptions={deliverymenOptions}
                     tableValue={tableValue}
                     tableSetter={setTableValue}
+                    tableOptions={tableOptionsList}
+                    isTableLocked={isTableLocked}
                 /> 
             </Form>
         </DashboardPage>

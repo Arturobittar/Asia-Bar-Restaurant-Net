@@ -1,6 +1,8 @@
 import handleQueryExecution from './handleQueryExecution.js';
 import { getOrderedObject } from '../libs/utilities.js';
 
+const allowedTableStatuses = new Set(["desocupada", "ocupada", "ordenada", "consumiendo"]);
+
 export async function sendAllRegistersFrom(res, tableName) {
     handleQueryExecution(res, async (db) => {
         const query = `SELECT * FROM ${tableName}`;
@@ -255,6 +257,73 @@ export async function deleteSale(req, res) {
         (results.affectedRows === 0)
             ? res.status(404).json({message: "No entry with such id"})
             : res.status(200).json({message: "Deleted Successfully!"});
+    });
+}
+
+export async function getTablesStatus(req, res) {
+    handleQueryExecution(res, async (db) => {
+        const [results] = await db.execute("SELECT Name, Status, SaleID, TimerStart, DeliveryTimeSeconds FROM Tables ORDER BY Name ASC");
+        res.status(200).json(results);
+    });
+}
+
+export async function updateTableStatus(req, res) {
+    handleQueryExecution(res, async (db) => {
+        const name = req.params.name;
+        const { status, saleId = null } = req.body;
+
+        if (!status || !allowedTableStatuses.has(status)) {
+            res.status(400).json({ message: "Invalid or missing status" });
+            return;
+        }
+
+        const [existingRows] = await db.execute("SELECT Name, Status, SaleID, TimerStart FROM Tables WHERE Name = ?", [name]);
+
+        if (existingRows.length === 0) {
+            res.status(404).json({ message: "Table not found" });
+            return;
+        }
+
+        const existing = existingRows[0];
+        let newSaleId = (saleId !== undefined) ? saleId : existing.SaleID;
+        let newTimerStart = existing.TimerStart;
+        let newDeliveryTime = existing.DeliveryTimeSeconds;
+
+        switch (status) {
+            case "ocupada":
+                newSaleId = saleId ?? null;
+                newTimerStart = null;
+                newDeliveryTime = null;
+                break;
+            case "ordenada":
+                if (saleId !== undefined) {
+                    newSaleId = saleId;
+                }
+                newTimerStart = new Date();
+                newDeliveryTime = null;
+                break;
+            case "consumiendo":
+                if (existing.TimerStart) {
+                    const startDate = new Date(existing.TimerStart);
+                    const elapsed = Math.max(0, Math.floor((Date.now() - startDate.getTime()) / 1000));
+                    newDeliveryTime = elapsed;
+                }
+                newTimerStart = null;
+                break;
+            case "desocupada":
+                newSaleId = null;
+                newTimerStart = null;
+                newDeliveryTime = null;
+                break;
+        }
+
+        await db.execute(
+            "UPDATE Tables SET Status = ?, SaleID = ?, TimerStart = ?, DeliveryTimeSeconds = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE Name = ?",
+            [status, newSaleId, newTimerStart, newDeliveryTime, name]
+        );
+
+        const [updatedRows] = await db.execute("SELECT Name, Status, SaleID, TimerStart, DeliveryTimeSeconds FROM Tables WHERE Name = ?", [name]);
+        res.status(200).json(updatedRows[0]);
     });
 }
 

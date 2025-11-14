@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { RequiredInput, WarningText, DisabledInputBox } from '../../ui/form.js';
 import { SubmitButton } from '../../ui/buttons.js';
 
@@ -47,14 +48,129 @@ export function ClientInfo({ isNewClient, foundName, values, setters }) {
         <DisabledInputBox title="Nombre de Cliente Encontrado" value={foundName} />;
 }
 
-export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter }) {
+function MesaDropdown({ options, value, onChange, isLocked = false }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    useEffect(() => {
+        const closeDropdown = (event) => {
+            if (!containerRef.current) return;
+            if (!containerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                setIsOpen(false);
+                buttonRef.current?.focus();
+            }
+        };
+
+        document.addEventListener('mousedown', closeDropdown);
+        document.addEventListener('touchstart', closeDropdown);
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', closeDropdown);
+            document.removeEventListener('touchstart', closeDropdown);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isLocked) {
+            setIsOpen(false);
+        }
+    }, [isLocked]);
+
+    const handleToggle = () => {
+        if (isLocked) return;
+        setIsOpen((prev) => !prev);
+    };
+
+    const handleToggleKeyDown = (event) => {
+        if (isLocked) return;
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            setIsOpen(true);
+        }
+    };
+
+    const handleSelect = (option) => {
+        onChange(option);
+        setIsOpen(false);
+        buttonRef.current?.focus();
+    };
+
+    return (
+        <div className="input-box margined custom-dropdown" ref={containerRef}>
+            <label className="input-title" htmlFor="mesa-selector">Mesa</label>
+            <button
+                id="mesa-selector"
+                type="button"
+                className={`custom-dropdown__toggle ${isLocked ? 'is-locked' : ''}`}
+                onClick={handleToggle}
+                onKeyDown={handleToggleKeyDown}
+                ref={buttonRef}
+                aria-disabled={isLocked}
+            >
+                <span>{value || "Selecciona una mesa"}</span>
+                <span className="custom-dropdown__icon">▾</span>
+            </button>
+
+            {isOpen && (
+                <div className="custom-dropdown__menu" role="listbox">
+                    {options.map((option) => (
+                        <button
+                            key={option}
+                            type="button"
+                            className={`custom-dropdown__option ${option === value ? 'is-selected' : ''}`}
+                            onClick={() => handleSelect(option)}
+                            role="option"
+                            aria-selected={option === value}
+                        >
+                            {option}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            <select
+                className="custom-dropdown__native-select"
+                value={value || ''}
+                onChange={(event) => {
+                    if (!isLocked) {
+                        onChange(event.target.value);
+                    }
+                }}
+                required
+                tabIndex={-1}
+                disabled={isLocked}
+            >
+                <option value="" disabled>Selecciona una mesa</option>
+                {options.map((option) => (
+                    <option key={`mesa-hidden-${option}`} value={option}>{option}</option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked }) {
     return(
         <>
             <RequiredInput type="combo" title="Tipo de Venta" options={saleOptions} onChange={setters[0]} value={values[0]} />  
             
             {   
                 (values[0] === saleOptions[0]) ? (
-                    <RequiredInput type="text" title="Mesa" onChange={tableSetter} value={tableValue} />
+                    <MesaDropdown
+                        options={tableOptions}
+                        value={tableValue}
+                        onChange={tableSetter}
+                        isLocked={isTableLocked}
+                    />
                 ) : null
             }
             
@@ -70,14 +186,14 @@ export function TypeInputs({ values, setters, deliverymanValue, deliverymanSette
     );
 }
 
-export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter }) {
+export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked }) {
     return (
         <>
             <RequiredInput type="id" title="Documento de Identidad del Cliente" value={clientId} onChange={setClientId} />
 
             <ClientInfo isNewClient={isNewClient} foundName={foundName} values={newClientValues} setters={newClientSetters} />
 
-            <TypeInputs values={typeValues} setters={typeSetters} deliverymanValue={deliverymanValue} deliverymanSetter={deliverymanSetter} deliverymenOptions={deliverymenOptions} tableValue={tableValue} tableSetter={tableSetter} />
+            <TypeInputs values={typeValues} setters={typeSetters} deliverymanValue={deliverymanValue} deliverymanSetter={deliverymanSetter} deliverymenOptions={deliverymenOptions} tableValue={tableValue} tableSetter={tableSetter} tableOptions={tableOptions} isTableLocked={isTableLocked} />
 
             <SubmitButton text="Continuar" />
         </>

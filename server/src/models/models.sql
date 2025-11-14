@@ -59,6 +59,39 @@ CREATE TABLE SaleDetails (
     FOREIGN KEY (ID) REFERENCES Sales(ID) ON DELETE CASCADE
 );
 
+CREATE TABLE Tables (
+    Name VARCHAR(20) PRIMARY KEY,
+    Status VARCHAR(20) NOT NULL DEFAULT 'desocupada',
+    SaleID INT,
+    TimerStart DATETIME,
+    DeliveryTimeSeconds INT,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (SaleID) REFERENCES Sales(ID) ON DELETE SET NULL
+);
+
+INSERT INTO Tables (Name, Status)
+VALUES
+    ('mesa 1', 'desocupada'),
+    ('mesa 2', 'desocupada'),
+    ('mesa 3', 'desocupada'),
+    ('mesa 4', 'desocupada'),
+    ('mesa 5', 'desocupada'),
+    ('mesa 6', 'desocupada'),
+    ('mesa 7', 'desocupada'),
+    ('mesa 8', 'desocupada'),
+    ('mesa 9', 'desocupada'),
+    ('mesa 10', 'desocupada'),
+    ('mesa 11', 'desocupada'),
+    ('mesa 12', 'desocupada'),
+    ('mesa 13', 'desocupada'),
+    ('mesa 14', 'desocupada'),
+    ('mesa 15', 'desocupada'),
+    ('mesa 16', 'desocupada'),
+    ('mesa 17', 'desocupada'),
+    ('mesa 18', 'desocupada'),
+    ('mesa 19', 'desocupada'),
+    ('mesa 20', 'desocupada');
+
 CREATE TABLE Deliverymen (
     Name VARCHAR(50) PRIMARY KEY NOT NULL,
     Area VARCHAR(25) NOT NULL,
