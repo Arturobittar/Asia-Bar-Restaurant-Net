@@ -1,20 +1,26 @@
 import { Pencil, Trash, Info, ReceiptText } from "lucide-react";
 import './table.css';
 
-function ButtonsBox({ id, onInfo, onEdit, onDelete, onTicket }) { 
+function ButtonsBox({ id, onInfo, onEdit, onDelete, onTicket, disableDelete = false }) { 
     return (
         <td>
             <div className="action-buttons-container">
                 { onInfo && (<Info className="action-button" size={20} onClick={ () => onInfo(id) } />) }
                 { onEdit && (<Pencil className="action-button" size={20} onClick={ () => onEdit(id) } />) }
-                { onDelete && (<Trash className="action-button" size={20} onClick={ () => onDelete(id) } />) }
+                { onDelete && (
+                    <Trash 
+                        className={`action-button ${disableDelete ? 'disabled' : ''}`}
+                        size={20}
+                        onClick={ () => { if (!disableDelete) { onDelete(id); } } }
+                    />
+                ) }
                 { onTicket && (<ReceiptText className="action-button" size={20} onClick={ () => onTicket(id) } />) }
             </div>
         </td>
     );
 }
 
-function BodyRow({ row, index, onInfo, onEdit, onDelete, onTicket, fields }) {
+function BodyRow({ row, index, onInfo, onEdit, onDelete, onTicket, fields, disableDelete }) {
 
     const rowId = `row-${index}`;
 
@@ -38,7 +44,7 @@ function BodyRow({ row, index, onInfo, onEdit, onDelete, onTicket, fields }) {
 
                 return <td key={i}>{ isDecimal ? parseFloat(value).toFixed(2) : (fields && isBool(fields[i])) ? toBool(value) : value }</td>  
             })}
-            <ButtonsBox id = { row[0] } onInfo={ onInfo } onEdit={ onEdit} onDelete={ onDeleteClick } onTicket={ onTicket } /> 
+            <ButtonsBox id = { row[0] } onInfo={ onInfo } onEdit={ onEdit} onDelete={ onDeleteClick } onTicket={ onTicket } disableDelete={disableDelete} /> 
         </tr>
     );
 }
@@ -51,22 +57,31 @@ function Header({ fields }) {
     );
 }
 
-function Body({ data, onInfo, onEdit, onTicket, onDelete, bodyFields }) {
+function Body({ data, onInfo, onEdit, onTicket, onDelete, bodyFields, disableDelete }) {
     return (
         <tbody>
             {data.map((row, index) => 
-                <BodyRow row={row} index={index} onInfo={onInfo} onEdit={onEdit} onDelete={onDelete} onTicket={onTicket} fields={bodyFields} /> 
+                <BodyRow 
+                    row={row}
+                    index={index}
+                    onInfo={onInfo}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onTicket={onTicket}
+                    fields={bodyFields}
+                    disableDelete={disableDelete}
+                /> 
             )}
         </tbody>
     );
 }
 
-export default function Table({ fields, data, onInfo, onEdit, onDelete, onTicket, bodyFields }) {
+export default function Table({ fields, data, onInfo, onEdit, onDelete, onTicket, bodyFields, disableDelete = false }) {
     return(
         <div className="table-container">
             <table className="control-table">
                 <Header fields={ fields } />
-                <Body data={ data } onInfo={onInfo} onEdit={onEdit} onDelete={onDelete} onTicket={onTicket} bodyFields={bodyFields}/>
+                <Body data={ data } onInfo={onInfo} onEdit={onEdit} onDelete={onDelete} onTicket={onTicket} bodyFields={bodyFields} disableDelete={disableDelete}/>
             </table>
         </div>
     );

@@ -6,6 +6,7 @@ import Table from './table.js';
 
 import { PrimaryButton } from '../../ui/buttons.js';
 import { SearchInputBox } from '../../ui/form.js';
+import { useRol } from '../../../hooks/session.js';
 
 import "./table-page.css";
 
@@ -55,17 +56,37 @@ function getAllColumnNames(fields) {
     return allColumnNames;
 }
 
-function TableContent({ fields, data, onInfo, onEdit, onDelete, onTicket }) {
+function TableContent({ fields, data, onInfo, onEdit, onDelete, onTicket, disableDelete }) {
     return (data.length === 0)
         ? <h1>No hay entradas</h1> 
-        : <Table fields={ getAllColumnNames(fields) } data={ data } onInfo={ onInfo } onEdit={ onEdit } onDelete={ onDelete } onTicket={ onTicket } bodyFields={ fields }/>;
+        : <Table 
+            fields={ getAllColumnNames(fields) }
+            data={ data }
+            onInfo={ onInfo }
+            onEdit={ onEdit }
+            onDelete={ onDelete }
+            onTicket={ onTicket }
+            bodyFields={ fields }
+            disableDelete={disableDelete}
+        />;
 }
 
 export default function TablePage({ title, fields, data, onInfo, onEdit, onDelete, onNew, onSearch, onTicket }) {
+    const rol = useRol();
+    const disableDelete = rol === "Usuario";
+
     return( 
         <DashboardPage>
             <Header title={ title } onNew={ onNew } onSearch={ onSearch } />
-            <TableContent fields={ fields } data={ data } onInfo={ onInfo } onEdit={ onEdit } onDelete={ onDelete } onTicket={ onTicket } />
+            <TableContent 
+                fields={ fields }
+                data={ data }
+                onInfo={ onInfo }
+                onEdit={ onEdit }
+                onDelete={ onDelete }
+                onTicket={ onTicket }
+                disableDelete={disableDelete}
+            />
         </DashboardPage>
     );
 }

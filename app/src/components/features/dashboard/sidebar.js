@@ -54,8 +54,18 @@ function SideBarMenu({ dashboardItems, expandedIndex, onItemClick, onSubItemClic
       <ul className="menu-items">
         <HomeButton />
 
-        {dashboardItems.map((menuItem, index) =>
-          rol !== "Administrador" && menuItem.isForAdminOnly ? null : (
+        {dashboardItems.map((menuItem, index) => {
+          const isAdminOnly = menuItem.isForAdminOnly;
+          const allowedRoles = menuItem.allowedRoles;
+          const isAllowed = Array.isArray(allowedRoles)
+            ? allowedRoles.includes(rol)
+            : !(rol !== "Administrador" && isAdminOnly);
+
+          if (!isAllowed) {
+            return null;
+          }
+
+          return (
             <MenuItem
               key={menuItem.title}
               title={menuItem.title}
@@ -64,8 +74,8 @@ function SideBarMenu({ dashboardItems, expandedIndex, onItemClick, onSubItemClic
               subitems={menuItem.subItems}
               onSubClick={onSubItemClick}
             />
-          ),
-        )}
+          )
+        })}
       </ul>
     </nav>
   )
