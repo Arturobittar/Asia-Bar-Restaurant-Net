@@ -20,6 +20,7 @@ function ContenidoConfirmacionVenta() {
     const order = useOrder();
     const orderClearer = useOrderClearer();
     const [tipoCambio, setTipoCambio] = useState(0);
+    const ticketTotalsRef = useRef({ totalBs: null, exchangeRate: null });
 
     const products = order.products;
         
@@ -43,10 +44,21 @@ function ContenidoConfirmacionVenta() {
         quantity: product[3],
     }));
 
+    const resolverTotalBs = () => {
+        if (ticketTotalsRef.current.totalBs !== null && !Number.isNaN(ticketTotalsRef.current.totalBs)) {
+            return ticketTotalsRef.current.totalBs;
+        }
+        if (!tipoCambio) {
+            return null;
+        }
+        return Number((total * tipoCambio).toFixed(2));
+    };
+
     const registrarVenta = (id) => {
         const productsArray = buildProductsArray();
         const normalizedTableName = order.tableNumber?.trim().toLowerCase();
         const isDineInSale = order.type === saleOptions[0] && Boolean(normalizedTableName);
+        const totalBsPersistido = resolverTotalBs();
 
         onNewSale({
             id: id,
@@ -56,7 +68,9 @@ function ContenidoConfirmacionVenta() {
             address: order.address,
             deliverymanName: order.deliverymanName,
             tableNumber: order.tableNumber,
+            paymentMethod: order.paymentMethod,
             note: order.note,
+            totalBs: totalBsPersistido,
             products: productsArray
         }, async () => {
             if (isDineInSale) {
@@ -167,6 +181,26 @@ function ContenidoConfirmacionVenta() {
         const now = new Date();
         const date = now.toLocaleDateString('es-MX');
         const time = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+        let exchangeRate = tipoCambio;
+        try {
+            const tasa = await obtenerTipoCambio();
+            if (tasa) {
+                exchangeRate = tasa;
+                setTipoCambio(tasa);
+            }
+        } catch (error) {
+            console.error('No se pudo actualizar la tasa de cambio antes de imprimir', error);
+        }
+
+        const totalBsCalculado = (exchangeRate)
+            ? Number((total * exchangeRate).toFixed(2))
+            : null;
+
+        ticketTotalsRef.current = {
+            totalBs: totalBsCalculado,
+            exchangeRate: exchangeRate ?? null
+        };
         
         const data = {
             id: id,
@@ -174,6 +208,7 @@ function ContenidoConfirmacionVenta() {
             address: order.address,
             deliverymanName: order.deliverymanName,
             tableNumber: order.tableNumber,
+            paymentMethod: order.paymentMethod,
             note: order.note,
             client: {
                 id: order.clientID,
@@ -188,6 +223,10 @@ function ContenidoConfirmacionVenta() {
                 cantidad: product[3],
                 precio: product[1]  // Precio unitario, no total
             })),
+            totals: {
+                totalBs: ticketTotalsRef.current.totalBs,
+                exchangeRate: ticketTotalsRef.current.exchangeRate
+            }
         };
 
         await printOrderTicket(data, () => afterPrintDialog(id)); 
@@ -208,6 +247,13 @@ function ContenidoConfirmacionVenta() {
                     {order.type === "Delivery" && order.address && (
                         <span className='datoCliente' id='informacionDireccion'>{order.address}</span>
                     )}
+                </div>
+
+                <div className='separadorMetodoPago' role="presentation"></div>
+
+                <div className='metodoPagoResumen'>
+                    <span className='metodoPagoEtiqueta'>Método de Pago</span>
+                    <span className='metodoPagoValor'>{order.paymentMethod?.trim() ? order.paymentMethod : "No registrado"}</span>
                 </div>
             </div>
 

@@ -33,8 +33,8 @@ export function useOrderClearer() {
 export function useOrderDetailsChanger() {
     const { order, setOrder } = useContext(OrderContext);
 
-    const setNewDetails = async (clientID, clientName, type, address, deliverymanName, tableNumber) => {
-        const newOrder = await new Order(clientID, clientName, type, address, deliverymanName, tableNumber, order.products, order.note); 
+    const setNewDetails = async (clientID, clientName, type, address, deliverymanName, tableNumber, paymentMethod) => {
+        const newOrder = await new Order(clientID, clientName, type, address, deliverymanName, tableNumber, paymentMethod, order.products, order.note); 
         await setOrder(newOrder);
     };
     
@@ -81,13 +81,13 @@ export function useOnDetailsSubmit() {
             );
         }
 
-        detailsChanger(details.clientID, details.clientName, details.type, details.address, details.deliverymanName, details.tableNumber);
+        detailsChanger(details.clientID, details.clientName, details.type, details.address, details.deliverymanName, details.tableNumber, details.paymentMethod);
 
         navigate(route);
     } 
 }
 
-export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliverymanName, tableNumber) {
+export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliverymanName, tableNumber, paymentMethod) {
     const clientName = isNewClient ? newName : foundName;
 
     return () => { 
@@ -97,7 +97,8 @@ export function useDetailsGetter(clientID, isNewClient, newName, foundName, type
             type: type,
             address: address,
             deliverymanName: deliverymanName,
-            tableNumber: tableNumber
+            tableNumber: tableNumber,
+            paymentMethod: paymentMethod
         }
     };
 }
@@ -208,7 +209,7 @@ export function useOrderChanger(products, note) {
     const { order, setOrder } = useContext(OrderContext);
 
     const setNewInfo = async () => {
-        const newOrder = await new Order(order.clientID, order.clientName, order.type, order.address, order.deliverymanName, order.tableNumber, products, note); 
+        const newOrder = await new Order(order.clientID, order.clientName, order.type, order.address, order.deliverymanName, order.tableNumber, order.paymentMethod, products, note); 
         await setOrder(newOrder);
     };
     

@@ -26,7 +26,7 @@ export function useSaleID() {
 export function useEditSaleFormFields() {
     const id = useSaleID(); 
     const saleProducts = usePairs();
-    const [values, setters] = useFormFields(7); // ClientId, ClientName, Type, Address, DeliverymanName, TableNumber, Note
+    const [values, setters] = useFormFields(8); // ClientId, ClientName, Type, Address, DeliverymanName, TableNumber, Note, PaymentMethod
 
     let areProductsInitialized = false;
 
@@ -47,6 +47,7 @@ export function useEditSaleFormFields() {
             setters[4](fetched.DeliverymanName || '');
             setters[5](fetched.TableNumber || '');
             setters[6](fetched.Note || '');
+            setters[7](fetched.PaymentMethod || '');
 
             const products = Array.isArray(fetched.products) ? fetched.products : [];
 
@@ -74,7 +75,7 @@ export function useEditSaleFormFields() {
     return [values, setters, saleProducts, onAddProduct, onDeleteProduct];
 }
 
-export function useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, note, products) {
+export function useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, note, paymentMethod, products) {
     const navigate = useNavigate();
 
     const productsArray = products.reduce((array, { value }) => [...array, {
@@ -92,6 +93,7 @@ export function useOnEditContinue(id, client, type, address, deliverymanName, ta
         deliverymanName: deliverymanName || null,
         tableNumber: tableNumber || null,
         note: note || null,
+        paymentMethod: paymentMethod || null,
         products: productsArray || []
     };
 
@@ -172,7 +174,9 @@ export function useActionButtons() {
                 fetched.DeliverymanName || null,
                 fetched.Address || null,
                 fetched.TableNumber || null,
-                fetched.Note || null
+                fetched.Note || null,
+                fetched.PaymentMethod || null,
+                fetched.TotalBs ?? null
             );
         };
 
@@ -213,8 +217,13 @@ export function useActionButtons() {
             products.forEach((product) => productsArray.push({
                 nombre: product.Name, 
                 cantidad: product.Quantity,
-                precio: product.Price  // Precio unitario, no total
+                precio: Number(product.Price)  // Precio unitario, no total
             }));
+
+            const totalUsd = products.reduce((sum, product) => sum + (Number(product.Price) * Number(product.Quantity)), 0);
+            const exchangeRateFromSale = (fetched.TotalBs && totalUsd)
+                ? Number((fetched.TotalBs / totalUsd).toFixed(4))
+                : null;
 
             await printOrderTicket({
                 id: fetched.ID,
@@ -223,6 +232,11 @@ export function useActionButtons() {
                 note: fetched.Note || null,
                 deliverymanName: fetched.DeliverymanName || null,
                 tableNumber: fetched.TableNumber || null,
+                paymentMethod: fetched.PaymentMethod || null,
+                totals: {
+                    totalBs: fetched.TotalBs ?? null,
+                    exchangeRate: exchangeRateFromSale,
+                },
                 client: client,
                 products: productsArray
             });

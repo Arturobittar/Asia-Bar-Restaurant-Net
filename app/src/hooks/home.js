@@ -23,8 +23,13 @@ export function useTicketPrinter() {
             products.forEach((product) => productsArray.push({
                 nombre: product.Name, 
                 cantidad: product.Quantity,
-                precio: product.Price  // Precio unitario, no total
+                precio: Number(product.Price)  // Precio unitario, no total
             }));
+
+            const totalUsd = products.reduce((sum, product) => sum + (Number(product.Price) * Number(product.Quantity)), 0);
+            const exchangeRateFromSale = (fetched.TotalBs && totalUsd)
+                ? Number((fetched.TotalBs / totalUsd).toFixed(4))
+                : null;
 
             await printOrderTicket({
                 id: fetched.ID,
@@ -33,6 +38,11 @@ export function useTicketPrinter() {
                 note: fetched.Note || null,
                 deliverymanName: fetched.DeliverymanName || null,
                 tableNumber: fetched.TableNumber || null,
+                paymentMethod: fetched.PaymentMethod || null,
+                totals: {
+                    totalBs: fetched.TotalBs ?? null,
+                    exchangeRate: exchangeRateFromSale,
+                },
                 client: client,
                 products: productsArray
             });

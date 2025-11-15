@@ -2,18 +2,32 @@ import { errorAlert } from './alerts.js';
 
 export default class PrintManager {
     constructor(content, afterPrint) {
-        const container= `
-            <div id="ticket-print-content">
+        this.printElement = document.getElementById('ticket-print-content');
+
+        if (this.printElement) {
+            this.printElement.innerHTML = `
                 <div class="ticket-container">
                     <pre>${content}</pre>
                 </div>
-            </div>
-        `;
+            `;
+            this.createdElement = false;
+        } else {
+            const markup = `
+                <div id="ticket-print-content">
+                    <div class="ticket-container">
+                        <pre>${content}</pre>
+                    </div>
+                </div>
+            `;
 
-        document.body.insertAdjacentHTML('beforeend', container);
+            document.body.insertAdjacentHTML('beforeend', markup);
+            this.printElement = document.getElementById('ticket-print-content');
+            this.createdElement = true;
+        }
 
         this.hasStarted = false;
         this.mediaQuery = window.matchMedia('print');
+        this.isAndroid = /Android/i.test(navigator.userAgent);
 
         this.afterPrint = () => {
             afterPrint();
@@ -25,10 +39,13 @@ export default class PrintManager {
     }
 
     #cleanup() {
-        const printElement = document.getElementById('ticket-print-content');
-        
-        if (printElement) 
-            printElement.remove();
+        if (!this.isAndroid) {
+            if (this.createdElement && this.printElement) {
+                this.printElement.remove();
+            } else if (this.printElement) {
+                this.printElement.innerHTML = '';
+            }
+        }
 
         window.removeEventListener('afterprint', this.boundAfterPrint);
         this.mediaQuery.removeEventListener('change', this.boundOnChange);
@@ -55,10 +72,18 @@ export default class PrintManager {
     print() {
         this.#startEvents();
 
-        try {
-            window.print();
-        } catch (error) {
-            this.#cleanup();
+        const triggerPrint = () => {
+            try {
+                window.print();
+            } catch (error) {
+                this.#cleanup();
+            }
+        };
+
+        if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => setTimeout(triggerPrint, 50));
+        } else {
+            setTimeout(triggerPrint, 50);
         }
     };
 }

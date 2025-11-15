@@ -78,19 +78,18 @@ function LogoContainer() {
   const [qrUrl, setQrUrl] = useState('');
 
   useEffect(() => {
-    // Obtener la URL del servidor desde la configuración
     const { serverUrl } = getNetworkConfig();
-    console.log("URL del servidor desde network.js:", serverUrl);
-    const url = new URL(serverUrl);
-    
-    // Construir la URL para el QR
-    const currentUrl = new URL(window.location.href);
-    currentUrl.hostname = url.hostname;
-    if (url.port) {
-      currentUrl.port = url.port;
+
+    try {
+      const loginPath = routes["Inicio de Sesion"] ?? "/";
+      const normalizedBase = serverUrl.endsWith('/') ? serverUrl : `${serverUrl}/`;
+      const loginUrl = new URL(loginPath.replace(/^\//, ''), normalizedBase);
+
+      setQrUrl(loginUrl.toString());
+    } catch (error) {
+      console.error("No se pudo construir la URL del QR", error);
+      setQrUrl(serverUrl);
     }
-    
-    setQrUrl(currentUrl.toString());
   }, []);
 
   const handleToggle = () => {

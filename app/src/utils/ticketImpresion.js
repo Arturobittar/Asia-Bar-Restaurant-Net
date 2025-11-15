@@ -179,6 +179,9 @@ if (datos.numeroTicket){
       });
     }
   }
+
+  const metodoPago = datos.metodoPago && datos.metodoPago.trim() !== "" ? datos.metodoPago : "No registrado";
+  dividirEnLineas(`Método de Pago: ${metodoPago}`, MAX_CHARS).forEach(linea => ticket.push(linea));
     
     
 
@@ -198,13 +201,10 @@ if (datos.numeroTicket){
   // Procesar cada ítem del pedido
   datos.items.forEach(item => {
     const nombre = item.nombre || 'Producto';
-    const cantidad = item.cantidad || 1;
-    const totalItem = item.precio || 0;
+    const cantidad = Number(item.cantidad || 1);
+    const precioUnitario = Number(item.precio || 0);
     
-    // Formatear el precio con símbolo de moneda
-    const precioFormateado = `$ ${totalItem.toFixed(2)}`;
-    
-    // Generar las líneas del producto
+    const precioFormateado = `$ ${precioUnitario.toFixed(2)}`;
     const lineasProducto = formatearLineaProducto(cantidad, nombre, precioFormateado);
     lineasProducto.forEach(linea => ticket.push(linea));
   });
@@ -218,23 +218,19 @@ if (datos.numeroTicket){
 
  //TOTALES
 
-  // total en dolares
-  const total = datos.items.reduce((sum, item) => sum + item.cantidad * item.precio, 0); 
-  const totalFormateado = `$ ${total.toFixed(2)}`;
-  ticket.push(alinearLados('TOTAL $:', totalFormateado));
+  const totalUSD = datos.items.reduce((sum, item) => {
+    const cantidad = Number(item.cantidad || 0);
+    const precioUnitario = Number(item.precio || 0);
+    return sum + (cantidad * precioUnitario);
+  }, 0);
+  ticket.push(alinearLados('TOTAL $:', `$ ${totalUSD.toFixed(2)}`));
 
-  // total en bolívares (obtiene el tipo de cambio desde la BD)
-  try {
-    const tipoCambio = await obtenerTipoCambio();
-    console.log('💵 Tipo de cambio actual:', tipoCambio, 'Bs');
-    
-    const totalBs = datos.items.reduce((acum, item) => 
-      acum + (item.cantidad * item.precio * tipoCambio), 0); 
-    const totalFormateadoBs = `Bs. ${totalBs.toFixed(2)}`;
-    ticket.push(alinearLados('TOTAL Bs:', totalFormateadoBs));
-  } catch (error) {
-    console.error('Error al obtener el tipo de cambio:', error);
-    ticket.push(alinearLados('TOTAL Bs:', 'Error en conversión'));
+  const totalBsPersistido = (datos.totalVentaBs !== undefined && datos.totalVentaBs !== null)
+    ? Number(datos.totalVentaBs)
+    : null;
+
+  if (totalBsPersistido !== null && Number.isFinite(totalBsPersistido)) {
+    ticket.push(alinearLados('TOTAL Bs:', `Bs ${totalBsPersistido.toFixed(2)}`));
   }
 
   // Línea divisoria después del total

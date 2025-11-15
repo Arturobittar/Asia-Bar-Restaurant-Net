@@ -48,7 +48,9 @@ CREATE TABLE Sales (
     DeliverymanName VARCHAR(50),
     Note TEXT,
     Direction VARCHAR(100),
-    TableNumber VARCHAR(20)
+    TableNumber VARCHAR(20),
+    PaymentMethod VARCHAR(200) NOT NULL,
+    TotalBs DECIMAL(12, 2)
 );
 
 CREATE TABLE SaleDetails (

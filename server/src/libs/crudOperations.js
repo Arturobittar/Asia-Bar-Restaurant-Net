@@ -114,10 +114,21 @@ export async function addSale(req, res) {
         const body = req.body;
         const products = body.products;
 
-        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber, PaymentMethod, TotalBs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const productQuery = `INSERT INTO SaleDetails (ID, Name, Price, Quantity) VALUES (?, ?, ?, ?)`;
         
-        const [results, fields] = await db.execute(saleQuery, [body.id, body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null, body.address || null, body.tableNumber || null]);
+        const [results, fields] = await db.execute(saleQuery, [
+            body.id,
+            body.clientId,
+            body.clientName,
+            body.type,
+            body.deliverymanName || null,
+            body.note || null,
+            body.address || null,
+            body.tableNumber || null,
+            body.paymentMethod,
+            body.totalBs ?? null
+        ]);
 
         products.map( async (product) => {
             const [results, fields] = await db.execute(productQuery, [body.id, product.name, product.price, product.quantity]);
@@ -139,8 +150,37 @@ export async function updateSale(req, res) {
         if (detectionResults.length === 0)
             res.status(404).json({message: "No entry with such id"})
 
-        const updateSaleQuery = "UPDATE Sales SET ClientIdDocument = ?, ClientName = ?, Type = ?, DeliverymanName = ?, Note = ?, Direction = ?, TableNumber = ? WHERE ID = ?";
-        const [saleQuery, saleFields] = await db.execute(updateSaleQuery, [body.clientId, body.clientName, body.type, body.deliverymanName || null, body.note || null, body.address || null, body.tableNumber || null, id]);
+        const updateFields = [
+            "ClientIdDocument = ?",
+            "ClientName = ?",
+            "Type = ?",
+            "DeliverymanName = ?",
+            "Note = ?",
+            "Direction = ?",
+            "TableNumber = ?",
+            "PaymentMethod = ?"
+        ];
+
+        const updateValues = [
+            body.clientId,
+            body.clientName,
+            body.type,
+            body.deliverymanName || null,
+            body.note || null,
+            body.address || null,
+            body.tableNumber || null,
+            body.paymentMethod
+        ];
+
+        if (body.totalBs !== undefined) {
+            updateFields.push("TotalBs = ?");
+            updateValues.push(body.totalBs);
+        }
+
+        const updateSaleQuery = `UPDATE Sales SET ${updateFields.join(", ")} WHERE ID = ?`;
+        updateValues.push(id);
+
+        await db.execute(updateSaleQuery, updateValues);
 
         const deleteOldProductsQuery = "DELETE FROM SaleDetails WHERE ID = ?";
         const [deletionResults, deletionFields] = await db.execute(deleteOldProductsQuery, [id]);
@@ -232,7 +272,9 @@ export async function getDetailedSale(req, res) {
                 s.DeliverymanName, 
                 s.Note,
                 s.Direction AS Address,
-                s.TableNumber
+                s.TableNumber,
+                s.PaymentMethod,
+                s.TotalBs
             FROM Sales s
             WHERE s.ID = ?
         `;

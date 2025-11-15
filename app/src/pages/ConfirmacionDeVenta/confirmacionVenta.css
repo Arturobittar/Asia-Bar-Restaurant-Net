@@ -1,12 +1,14 @@
 .tituloConfirmacionVenta{
 
     text-align: center;
-    margin: 0 0 20px 0;
-    padding: 10px;
+    margin: 0 0 12px 0;
+    padding: 10px 10px 6px;
     width: 100%;
     box-sizing: border-box;
 
 }
+
+
 
 .mainConfirmacionVenta{
 
@@ -28,7 +30,7 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 10px;
+    padding: 4px 10px 10px;
     box-sizing: border-box;
     align-items: flex-start;
     justify-content: center;
@@ -69,6 +71,34 @@
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.separadorMetodoPago{
+    width: 100%;
+    height: 1px;
+    background: #e2e2e2;
+}
+
+.metodoPagoResumen{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metodoPagoEtiqueta{
+    font-weight: 600;
+    font-size: 14px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metodoPagoValor{
+    font-size: 18px;
+    color: #111;
 }
 
 #resumenVenta{
@@ -177,6 +207,68 @@
     font-weight: bold;
 
 
+}
+
+.frameBotones{
+    width: 100%;
+    margin: 30px auto 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.btnPedido{
+    border-radius: 28px;
+    border: none;
+    background: var(--red-hue);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 14px 32px;
+    min-width: 150px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btnPedido:active{
+    transform: scale(0.97);
+}
+
+#btnCancelar{
+    background: #fff;
+    color: var(--red-hue);
+    border: 2px solid var(--red-hue);
+}
+
+#btnCancelar:active{
+    background: var(--red-hue);
+    color: #fff;
+}
+
+@media (min-width: 375px){
+
+    .frameBotones{
+        margin: 0;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .btnPedido{
+        width: 100%;
+        max-width: 150px;
+        font-size: 16px;
+        text-align: center;
+    }
+}
+
+
+@media (max-width: 480px){
+    .tituloConfirmacionVenta{
+        margin-bottom: 6px;
+        padding-bottom: 2px;
+    }
 }
 
 @media (min-width: 768px) and (max-width: 1023px){

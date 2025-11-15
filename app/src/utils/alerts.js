@@ -85,9 +85,7 @@ function getRowHtmlString(row) {
     return htmlString;
 }
 
-function getProductsTable(data) {
-    const fields = ["Nombre", "Precio Unitario", "Cantidad"];
-
+function getProductsTable(data, totalGeneralBs = null) {
     let htmlString = "<h3 class=\"alert-subtitle\">Productos</h3>\n";
     
     htmlString += "<div class=\"products-table-container\">";
@@ -109,9 +107,14 @@ function getProductsTable(data) {
         htmlString += "\t<p class=\"total-field\">" + "<span>Total:</span> <span>" + subtotal.toFixed(2) + "$</span>" + "</p>\n";
     });
     
+    const totalBsNumber = (totalGeneralBs !== null && totalGeneralBs !== undefined) ? Number(totalGeneralBs) : null;
+
     // Agregar total general
     htmlString += "\t<div class=\"grand-total\">";
     htmlString += "\t\t<p><b>TOTAL GENERAL:</b> <span>" + totalGeneral.toFixed(2) + "$</span></p>";
+    if (totalBsNumber !== null && Number.isFinite(totalBsNumber)) {
+        htmlString += "\t\t<p><b>TOTAL EN Bs:</b> <span>Bs " + totalBsNumber.toFixed(2) + "</span></p>";
+    }
     htmlString += "\t</div>\n";
 
     htmlString += "</div>";
@@ -126,7 +129,7 @@ export default class InfoField {
     }
 }
 
-function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note) {
+function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod) {
     let htmlString = "<h3 class=\"alert-subtitle\">Información del Pedido</h3>\n";
 
     const data = [
@@ -156,6 +159,9 @@ function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, no
         data.push(new InfoField("Nota", note));
     }
 
+    const formattedPaymentMethod = paymentMethod && paymentMethod.trim() !== "" ? paymentMethod : "No registrado";
+    data.push(new InfoField("Método de Pago", formattedPaymentMethod));
+
     htmlString += "\t<div class=\"info-fields-container\">";
 
     data.forEach( (field) => {
@@ -167,14 +173,14 @@ function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, no
     return htmlString;
 }
 
-function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note) {
-    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note) + getProductsTable(products);
+function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs) {
+    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod) + getProductsTable(products, totalBs);
 }
 
-export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null) {
+export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null, paymentMethod = null, totalBs = null) {
     Swal.fire({
         title: `Orden #${number}`,
-        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note),
+        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs),
         confirmButtonText: "Vale",
         confirmButtonColor: redHue,
     });

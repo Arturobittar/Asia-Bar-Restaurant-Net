@@ -126,7 +126,9 @@ function Inicio(){
                                                     fetched.DeliverymanName || null,
                                                     fetched.Address || null,
                                                     fetched.TableNumber || null,
-                                                    fetched.Note || null
+                                                    fetched.Note || null,
+                                                    fetched.PaymentMethod || null,
+                                                    fetched.TotalBs ?? null
                                                 );
                                             } catch (error) {
                                                 console.error("Error detallado:", {

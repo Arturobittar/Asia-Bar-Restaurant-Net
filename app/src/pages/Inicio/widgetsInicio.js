@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./widgetsInicioCss/Mesa.css"
 /*import "./widgetsInicioCss/RecienAgregado.css"*/
 import "./widgetsInicioCss/MasVendidos.css"
 import "./widgetsInicioCss/PedidoTicket.css"
-import {InformacionDelProductoModal, InformacionDelPedidoModal} from "./modalesInicio.js"
+import {InformacionDelProductoModal } from "./modalesInicio.js"
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../config/routes.js'; 
 import { updateTableStatus, getSaleDetails } from '../../utils/api.js';
-import { errorAlert } from "../../utils/alerts.js";
+import { errorAlert, saleAlert } from "../../utils/alerts.js";
 
 import { Info, ReceiptText } from "lucide-react";
 
@@ -49,6 +49,7 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
    const [elapsedSeconds, setElapsedSeconds] = useState(0);
    const [isUpdating, setIsUpdating] = useState(false);
    const [isLoadingInfo, setIsLoadingInfo] = useState(false);
+   const widgetRef = useRef(null);
 
    const estado = data?.Status ?? "desocupada";
    const timerStart = useMemo(() => data?.TimerStart ? new Date(data.TimerStart) : null, [data?.TimerStart]);
@@ -90,6 +91,25 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
       if (isUpdating) return;
       setMostrarOpciones(prev => !prev);
    };
+
+   useEffect(() => {
+      if (!mostrarOpciones) return;
+
+      const handleOutsideClick = (event) => {
+         if (!widgetRef.current) return;
+         if (!widgetRef.current.contains(event.target)) {
+            setMostrarOpciones(false);
+         }
+      };
+
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('touchstart', handleOutsideClick);
+
+      return () => {
+         document.removeEventListener('mousedown', handleOutsideClick);
+         document.removeEventListener('touchstart', handleOutsideClick);
+      };
+   }, [mostrarOpciones]);
 
    const sendStatusUpdate = async (status, extraPayload = {}) => {
       if (!normalizedName) return;
@@ -151,30 +171,29 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
             throw new Error("No se encontraron datos de la venta");
          }
 
+         const client = {
+            id: fetched.ClientIdDocument,
+            name: fetched.ClientName
+         };
+
          const products = Array.isArray(fetched.products) ? fetched.products : [];
-         const formattedProducts = products.map((product) => ({
-            nombre: product.Name || "Producto",
-            cantidad: product.Quantity || 0,
-            precio: Number.parseFloat(product.Price || 0)
-         }));
+         const productsArray = products.map((product) => ([
+            product.Name || "Sin nombre",
+            Number.parseFloat(product.Price || 0).toFixed(2),
+            product.Quantity || 0
+         ]));
 
-         const totalCalculado = formattedProducts.reduce((sum, prod) => sum + (prod.precio * prod.cantidad), 0);
-
-         onOpen?.(
-            <InformacionDelPedidoModal
-               datosPedido={{
-                  numeroPedido: fetched.ID,
-                  nombreComprador: fetched.ClientName,
-                  idComprador: fetched.ClientIdDocument,
-                  tipoDeCompra: fetched.Type,
-                  nombreRepartidor: fetched.DeliverymanName,
-                  direccionEntrega: fetched.Address,
-                  mesa: fetched.TableNumber,
-                  nota: fetched.Note,
-                  productos: formattedProducts,
-                  total: totalCalculado
-               }}
-            />
+         saleAlert(
+            fetched.ID || 'N/A',
+            client,
+            fetched.Type || 'No especificado',
+            productsArray,
+            fetched.DeliverymanName || null,
+            fetched.Address || null,
+            fetched.TableNumber || null,
+            fetched.Note || null,
+            fetched.PaymentMethod || null,
+            fetched.TotalBs ?? null
          );
       } catch (error) {
          console.error("No se pudo obtener la información del pedido", error);
@@ -187,7 +206,7 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
    const mostrarMenu = mostrarOpciones && !isUpdating;
 
    return (
-      <div className={`widgetMesa ${estado}`} onClick={toggleMenu}>
+      <div className={`widgetMesa ${estado}`} onClick={toggleMenu} ref={widgetRef}>
          <div className="mesaHeader">
             <span className="estadoMesa">{estadoLabel}</span>
             {saleId && <span className="ventaTag">Orden #{saleId}</span>}

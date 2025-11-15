@@ -48,10 +48,19 @@ export function ClientInfo({ isNewClient, foundName, values, setters }) {
         <DisabledInputBox title="Nombre de Cliente Encontrado" value={foundName} />;
 }
 
-function MesaDropdown({ options, value, onChange, isLocked = false }) {
+function OptionDropdown({
+    label,
+    placeholder,
+    options,
+    value,
+    onChange,
+    isLocked = false,
+    dropdownId
+}) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef(null);
     const buttonRef = useRef(null);
+    const generatedId = dropdownId ?? `${label.toLowerCase().replace(/\s+/g, '-')}-selector`;
 
     useEffect(() => {
         const closeDropdown = (event) => {
@@ -106,9 +115,9 @@ function MesaDropdown({ options, value, onChange, isLocked = false }) {
 
     return (
         <div className="input-box margined custom-dropdown" ref={containerRef}>
-            <label className="input-title" htmlFor="mesa-selector">Mesa</label>
+            <label className="input-title" htmlFor={generatedId}>{label}</label>
             <button
-                id="mesa-selector"
+                id={generatedId}
                 type="button"
                 className={`custom-dropdown__toggle ${isLocked ? 'is-locked' : ''}`}
                 onClick={handleToggle}
@@ -116,7 +125,7 @@ function MesaDropdown({ options, value, onChange, isLocked = false }) {
                 ref={buttonRef}
                 aria-disabled={isLocked}
             >
-                <span>{value || "Selecciona una mesa"}</span>
+                <span>{value || placeholder}</span>
                 <span className="custom-dropdown__icon">▾</span>
             </button>
 
@@ -149,27 +158,37 @@ function MesaDropdown({ options, value, onChange, isLocked = false }) {
                 tabIndex={-1}
                 disabled={isLocked}
             >
-                <option value="" disabled>Selecciona una mesa</option>
+                <option value="" disabled>{placeholder}</option>
                 {options.map((option) => (
-                    <option key={`mesa-hidden-${option}`} value={option}>{option}</option>
+                    <option key={`${generatedId}-hidden-${option}`} value={option}>{option}</option>
                 ))}
             </select>
         </div>
     );
 }
 
-export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked }) {
+export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked, isSaleTypeLocked }) {
     return(
         <>
-            <RequiredInput type="combo" title="Tipo de Venta" options={saleOptions} onChange={setters[0]} value={values[0]} />  
+            <RequiredInput
+                type="combo"
+                title="Tipo de Venta"
+                options={saleOptions}
+                onChange={setters[0]}
+                value={values[0]}
+                selectorProps={{ disabled: isSaleTypeLocked }}
+            />  
             
             {   
                 (values[0] === saleOptions[0]) ? (
-                    <MesaDropdown
+                    <OptionDropdown
+                        label="Mesa"
+                        placeholder="Selecciona una mesa"
                         options={tableOptions}
                         value={tableValue}
                         onChange={tableSetter}
                         isLocked={isTableLocked}
+                        dropdownId="mesa-selector"
                     />
                 ) : null
             }
@@ -177,7 +196,14 @@ export function TypeInputs({ values, setters, deliverymanValue, deliverymanSette
             {   
                 (values[0] === saleOptions[2]) ? (
                     <>
-                        <RequiredInput type="text" title="Repartidor" options={deliverymenOptions} onChange={deliverymanSetter} value={deliverymanValue} />
+                        <OptionDropdown
+                            label="Repartidor"
+                            placeholder="Selecciona un repartidor"
+                            options={deliverymenOptions}
+                            value={deliverymanValue}
+                            onChange={deliverymanSetter}
+                            dropdownId="repartidor-selector"
+                        />
                         <RequiredInput type="text" title="Dirección" onChange={ setters[1] } value={values[1]} />
                     </>
                 ) : null
@@ -186,14 +212,32 @@ export function TypeInputs({ values, setters, deliverymanValue, deliverymanSette
     );
 }
 
-export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked }) {
+export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked, isSaleTypeLocked, paymentMethod, paymentMethodSetter }) {
     return (
         <>
             <RequiredInput type="id" title="Documento de Identidad del Cliente" value={clientId} onChange={setClientId} />
 
             <ClientInfo isNewClient={isNewClient} foundName={foundName} values={newClientValues} setters={newClientSetters} />
 
-            <TypeInputs values={typeValues} setters={typeSetters} deliverymanValue={deliverymanValue} deliverymanSetter={deliverymanSetter} deliverymenOptions={deliverymenOptions} tableValue={tableValue} tableSetter={tableSetter} tableOptions={tableOptions} isTableLocked={isTableLocked} />
+            <TypeInputs
+                values={typeValues}
+                setters={typeSetters}
+                deliverymanValue={deliverymanValue}
+                deliverymanSetter={deliverymanSetter}
+                deliverymenOptions={deliverymenOptions}
+                tableValue={tableValue}
+                tableSetter={tableSetter}
+                tableOptions={tableOptions}
+                isTableLocked={isTableLocked}
+                isSaleTypeLocked={isSaleTypeLocked}
+            />
+
+            <RequiredInput
+                type="text"
+                title="Método de Pago"
+                value={paymentMethod}
+                onChange={paymentMethodSetter}
+            />
 
             <SubmitButton text="Continuar" />
         </>

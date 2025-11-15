@@ -25,6 +25,7 @@ export default function OrderDetails() {
     const [typeValues, typeSetters] = useFormFields(2);
     const [tableValue, setTableValue] = useState(tableName || "");
     const [isTableLocked, setIsTableLocked] = useState(Boolean(tableName));
+    const [isSaleTypeLocked, setIsSaleTypeLocked] = useState(Boolean(fromTable));
 
     const tableOptionsList = useMemo(() => {
         const tableSet = new Set(tableOptions);
@@ -37,6 +38,7 @@ export default function OrderDetails() {
     useEffect(() => {
         if (fromTable) {
             typeSetters[0](saleOptions[0]); // "Comer Aquí"
+            setIsSaleTypeLocked(true);
             if (tableName) {
                 setTableValue(tableName);
                 setIsTableLocked(true);
@@ -53,6 +55,7 @@ export default function OrderDetails() {
     
     const [deliverymanValue, setDeliverymanValue] = useState("");
     const [deliverymenOptions, setDeliverymenOptions] = useState([]);
+    const [paymentMethod, setPaymentMethod] = useState("");
 
     useEffect(() => {
         const fetchDeliverymen = async () => {
@@ -65,7 +68,7 @@ export default function OrderDetails() {
         fetchDeliverymen();
     }, []);
 
-    const detailsGetter = useDetailsGetter(clientId, isNewClient, newClientValues[0], foundName, typeValues[0], typeValues[1], deliverymanValue, tableValue);
+    const detailsGetter = useDetailsGetter(clientId, isNewClient, newClientValues[0], foundName, typeValues[0], typeValues[1], deliverymanValue, tableValue, paymentMethod);
     
     return (
         <DashboardPage> 
@@ -86,6 +89,9 @@ export default function OrderDetails() {
                     tableSetter={setTableValue}
                     tableOptions={tableOptionsList}
                     isTableLocked={isTableLocked}
+                    isSaleTypeLocked={isSaleTypeLocked}
+                    paymentMethod={paymentMethod}
+                    paymentMethodSetter={setPaymentMethod}
                 /> 
             </Form>
         </DashboardPage>

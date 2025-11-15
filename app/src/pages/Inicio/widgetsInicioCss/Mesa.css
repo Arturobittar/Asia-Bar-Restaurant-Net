@@ -172,7 +172,22 @@
     .widgetMesa{
         width: 150px;
         height: 150px;
+        padding: 12px 10px;
+    }
 
+    .mesaHeader {
+        min-height: 36px;
+        gap: 0;
+    }
+
+    .nombreMesa {
+        font-size: 1.35rem;
+        margin-top: 0;
+    }
+
+    .mesaBody {
+        padding-top: 0;
+        gap: 2px;
     }
 
     .menuOpciones{
