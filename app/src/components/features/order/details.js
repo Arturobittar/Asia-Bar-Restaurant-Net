@@ -48,7 +48,7 @@ export function ClientInfo({ isNewClient, foundName, values, setters }) {
         <DisabledInputBox title="Nombre de Cliente Encontrado" value={foundName} />;
 }
 
-function OptionDropdown({
+export function OptionDropdown({
     label,
     placeholder,
     options,

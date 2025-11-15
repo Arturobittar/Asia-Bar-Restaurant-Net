@@ -1,16 +1,83 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { useFormFields } from "../hooks/form.js";
 import { useSaleID, useEditSaleFormFields, useOnEditContinue } from "../hooks/sales.js";
+import { getTableData } from "../utils/api.js";
+import { OptionDropdown } from "../components/features/order/details.js";
 
 import ControlForm from '../components/layout/control-form.js';
 
 import { RequiredInput } from '../components/ui/form.js';
 
-import { saleOptions } from '../config/tables.js';
+import { saleOptions, tableOptions } from '../config/tables.js';
 
 import { routes } from '../config/routes.js';
 
 import { EditProductsSection } from '../components/features/order/edit.js';
+
+function RepartidorDropdown({ value, onChange }) {
+    const [options, setOptions] = useState([]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchDeliverymen = async () => {
+            try {
+                const data = await getTableData('deliverymen');
+                let available = data
+                    .filter((deliveryman) => deliveryman[2] === 1)
+                    .map((deliveryman) => deliveryman[0]);
+
+                if (value && !available.includes(value)) {
+                    available = [...available, value];
+                }
+
+                if (isMounted) {
+                    setOptions(available);
+                }
+            } catch (error) {
+                console.error('No se pudieron cargar los repartidores', error);
+            }
+        };
+
+        fetchDeliverymen();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [value]);
+
+    return (
+        <OptionDropdown
+            label="Repartidor"
+            placeholder="Selecciona un repartidor"
+            options={options}
+            value={value}
+            onChange={onChange}
+            dropdownId="repartidor-selector"
+        />
+    );
+}
+
+function MesaDropdown({ value, onChange }) {
+    const options = useMemo(() => {
+        const set = new Set(tableOptions);
+        if (value) {
+            set.add(value);
+        }
+        return Array.from(set);
+    }, [value]);
+
+    return (
+        <OptionDropdown
+            label="Mesa"
+            placeholder="Selecciona una mesa"
+            options={options}
+            value={value}
+            onChange={onChange}
+            dropdownId="mesa-selector"
+        />
+    );
+}
 
 function EditOrder() {
 
@@ -28,11 +95,12 @@ function EditOrder() {
     const deliverymanName = values[4];
     const tableNumber = values[5];
     const note = values[6];
+    const paymentMethod = values[7];
 
     const isDelivery = type === saleOptions[2]; // "Delivery" es la tercera opción
     const isEatHere = type === saleOptions[0]; // "Comer Aquí" es la primera opción
 
-    const onContinue = useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, note, products);
+    const onContinue = useOnEditContinue(id, client, type, address, deliverymanName, tableNumber, note, paymentMethod, products);
 
     return (
         <ControlForm title={`Venta N°${id}`} backRoute={routes['Control de Ventas']} onSubmit={onContinue} > 
@@ -43,12 +111,12 @@ function EditOrder() {
             {isDelivery && (
                 <>
                     <RequiredInput type="text" title="Dirección" onChange={setters[3]} value={address} />
-                    <RequiredInput type="text" title="Nombre del Repartidor" onChange={setters[4]} value={deliverymanName} />
+                    <RepartidorDropdown value={deliverymanName} onChange={setters[4]} />
                 </>
             )}
 
             {isEatHere && (
-                <RequiredInput type="text" title="Mesa" onChange={setters[5]} value={tableNumber} />
+                <MesaDropdown value={tableNumber} onChange={setters[5]} />
             )}
 
             <RequiredInput type="textarea" title="Nota" onChange={setters[6]} value={note} />
