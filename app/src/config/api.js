@@ -5,6 +5,6 @@ const isLocalhost = window.location.hostname === 'localhost' ||
 // Usar localhost para desarrollo local, de lo contrario usar la IP
 const API_BASE_URL = isLocalhost 
   ? 'http://localhost:9090/api' 
-  : 'http://10.104.62.59:9090/api';
+  : 'http://10.246.188.59:9090/api';
 
 export const apiAddress = API_BASE_URL;

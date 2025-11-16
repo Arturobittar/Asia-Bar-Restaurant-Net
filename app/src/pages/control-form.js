@@ -10,6 +10,8 @@ import { RequiredInput } from '../components/ui/form.js';
 import { onControlForm } from '../utils/api.js';
 
 import { fieldTypes } from '../config/tables.js';
+import { formatSequentialCurrencyInput } from '../config/fn-reusables.js';
+import { formatSequentialCurrencyInput } from '../config/fn-reusables.js';
 
 function ControlFormPage() {
 
@@ -22,6 +24,8 @@ function ControlFormPage() {
     
     const navigate = useNavigate();
 
+    const requiresSequentialPrice = ["Menú", "Contornos", "Productos"].includes(table.name);
+
     return (
         <ControlForm title={ table.name } onSubmit={ (e) => onControlForm(e, table, fields, navigate, modifyID) } > 
             { tableFields.map( (tableField, i) => {
@@ -31,13 +35,25 @@ function ControlFormPage() {
                 
                 const type = fieldTypes.find((type) => Object.hasOwn(tableField, type));
                 const title = tableField[type];
+                const isSequentialPrice = requiresSequentialPrice && title === "Precio";
+                const isSequentialNumber = requiresSequentialPrice && type === "number";
+
+                const handleChange = (nextValue) => {
+                    const formatted = isSequentialPrice
+                        ? formatSequentialCurrencyInput(nextValue)
+                        : isSequentialNumber
+                            ? formatSequentialNumberInput(nextValue)
+                            : nextValue;
+
+                    setter(formatted);
+                };
 
                 return( 
                     <RequiredInput 
                         key={ `input-${title}` } 
                         type={ type } 
                         title={ title } 
-                        onChange={ setter } 
+                        onChange={ handleChange } 
                         value={ value } 
                         options={ tableField.options } 
                     /> 

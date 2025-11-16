@@ -3,6 +3,7 @@ import { useDashboardFunctions, useOnMenuItemFunctions, useOnQuit } from "../../
 
 import { dashboardItems } from '../../config/dashboard-items.js';
 import { guardarTipoCambio } from '../../config/tipoCambio.js';
+import { formatSequentialCurrencyInput } from '../../config/fn-reusables.js';
 
 import Dashboard from "../../components/features/dashboard/dashboard.js";
 import { ModalInicio } from "../../pages/Inicio/modalesInicio.js";
@@ -57,32 +58,8 @@ const DashboardPage = ({ children }) => {
         onQuit
     ]  = useDashboardFunctions(isOpen, setOpenStatus, expandedIndex, setExpandedIndex, handleOpenTCModal);
 
-    // Función para formatear el valor según la secuencia especial
-        const formatearTipoCambio = (input) => {
-        // Remover todo excepto dígitos
-        const digitos = input.replace(/[^0-9]/g, '');
-        
-        if (digitos === '') return '0.00';
-        
-        // Tomar solo los últimos 7 dígitos (para permitir hasta 1 millón)
-        const ultimosDigitos = digitos.slice(-7);
-        const len = ultimosDigitos.length;
-        
-        // Inicializar con ceros: "0000000"
-        let numero = '0000000';
-        
-        // Reemplazar los últimos dígitos con los ingresados
-        numero = numero.slice(0, -len) + ultimosDigitos;
-        
-        // Separar en parte entera (primeros 3 dígitos) y decimal (últimos 2)
-        const parteEntera = parseInt(numero.slice(0, -2), 10).toString();
-        const parteDecimal = numero.slice(-2);
-        
-        return `${parteEntera}.${parteDecimal}`;
-    };
-    
     const handleTasaChange = (e) => {
-        const valorFormateado = formatearTipoCambio(e.target.value);
+        const valorFormateado = formatSequentialCurrencyInput(e.target.value);
         setTasa(valorFormateado);
     };
 
