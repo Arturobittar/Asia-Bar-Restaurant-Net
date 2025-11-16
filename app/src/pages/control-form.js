@@ -11,7 +11,7 @@ import { onControlForm } from '../utils/api.js';
 
 import { fieldTypes } from '../config/tables.js';
 import { formatSequentialCurrencyInput } from '../config/fn-reusables.js';
-import { formatSequentialCurrencyInput } from '../config/fn-reusables.js';
+import { formatSequentialNumberInput } from '../config/fn-reusables.js';
 
 function ControlFormPage() {
 
