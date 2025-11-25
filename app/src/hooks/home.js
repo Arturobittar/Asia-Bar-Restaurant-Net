@@ -26,9 +26,20 @@ export function useTicketPrinter() {
                 precio: Number(product.Price)  // Precio unitario, no total
             }));
 
-            const totalUsd = products.reduce((sum, product) => sum + (Number(product.Price) * Number(product.Quantity)), 0);
-            const exchangeRateFromSale = (fetched.TotalBs && totalUsd)
-                ? Number((fetched.TotalBs / totalUsd).toFixed(4))
+            const productsTotalUsd = products.reduce((sum, product) => sum + (Number(product.Price) * Number(product.Quantity)), 0);
+            const deliveryPriceUsd = Number(fetched.DeliveryPrice ?? 0);
+            const totalUsdConDelivery = productsTotalUsd + deliveryPriceUsd;
+
+            const totalBsNumber = fetched.TotalBs !== null && fetched.TotalBs !== undefined
+                ? Number(fetched.TotalBs)
+                : null;
+
+            const exchangeRateFromSale = (totalBsNumber && totalUsdConDelivery)
+                ? Number((totalBsNumber / totalUsdConDelivery).toFixed(4))
+                : null;
+
+            const deliveryPriceBs = exchangeRateFromSale && deliveryPriceUsd
+                ? Number((deliveryPriceUsd * exchangeRateFromSale).toFixed(2))
                 : null;
 
             await printOrderTicket({
@@ -40,11 +51,13 @@ export function useTicketPrinter() {
                 tableNumber: fetched.TableNumber || null,
                 paymentMethod: fetched.PaymentMethod || null,
                 totals: {
-                    totalBs: fetched.TotalBs ?? null,
+                    totalBs: totalBsNumber,
                     exchangeRate: exchangeRateFromSale,
                 },
                 client: client,
-                products: productsArray
+                products: productsArray,
+                deliveryPriceUsd,
+                deliveryPriceBs
             });
         };
 

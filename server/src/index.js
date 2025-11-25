@@ -5,5 +5,5 @@ const PORT = process.env.PORT || 9090;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
     console.log(`Acceso local: http://localhost:${PORT}`);
-    console.log(`Acceso en red: http://10.246.188.59:${PORT}`);
+    console.log(`Acceso en red: http://10.163.184.59:${PORT}`);
 });

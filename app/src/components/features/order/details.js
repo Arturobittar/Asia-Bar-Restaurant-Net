@@ -3,6 +3,7 @@ import { RequiredInput, WarningText, DisabledInputBox } from '../../ui/form.js';
 import { SubmitButton } from '../../ui/buttons.js';
 
 import { saleOptions } from '../../../config/tables.js';
+import { formatSequentialCurrencyInput } from '../../../config/fn-reusables.js';
 
 function Input(title, type) {
     this.title = title;
@@ -168,6 +169,12 @@ export function OptionDropdown({
 }
 
 export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked, isSaleTypeLocked }) {
+    const deliveryPriceValue = values[2] ?? '0.00';
+
+    const handleDeliveryPriceChange = (inputValue) => {
+        setters[2](formatSequentialCurrencyInput(inputValue));
+    };
+
     return(
         <>
             <RequiredInput
@@ -204,7 +211,14 @@ export function TypeInputs({ values, setters, deliverymanValue, deliverymanSette
                             onChange={deliverymanSetter}
                             dropdownId="repartidor-selector"
                         />
-                        <RequiredInput type="text" title="Dirección" onChange={ setters[1] } value={values[1]} />
+                        <RequiredInput type="text" title="Dirección" onChange={setters[1]} value={values[1]} />
+                        <RequiredInput
+                            type="text"
+                            title="Precio delivery ($)"
+                            onChange={handleDeliveryPriceChange}
+                            value={deliveryPriceValue}
+                            options={{ inputMode: 'decimal' }}
+                        />
                     </>
                 ) : null
             } 

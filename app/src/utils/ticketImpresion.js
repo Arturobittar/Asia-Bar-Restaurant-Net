@@ -218,11 +218,26 @@ if (datos.numeroTicket){
 
  //TOTALES
 
-  const totalUSD = datos.items.reduce((sum, item) => {
+  const deliveryPriceUsd = Number(datos.deliveryPriceUsd || 0);
+  const deliveryPriceBs = datos.deliveryPriceBs !== undefined && datos.deliveryPriceBs !== null
+    ? Number(datos.deliveryPriceBs)
+    : null;
+
+  const totalUSDProductos = datos.items.reduce((sum, item) => {
     const cantidad = Number(item.cantidad || 0);
     const precioUnitario = Number(item.precio || 0);
     return sum + (cantidad * precioUnitario);
   }, 0);
+
+  if (deliveryPriceUsd > 0) {
+    ticket.push(alinearLados('DELIVERY $:', `$ ${deliveryPriceUsd.toFixed(2)}`));
+    if (deliveryPriceBs !== null && Number.isFinite(deliveryPriceBs)) {
+      ticket.push(alinearLados('DELIVERY Bs:', `Bs ${deliveryPriceBs.toFixed(2)}`));
+    }
+  }
+ticket.push(lineaDivisoria('-'));
+ticket.push('');
+  const totalUSD = totalUSDProductos + deliveryPriceUsd;
   ticket.push(alinearLados('TOTAL $:', `$ ${totalUSD.toFixed(2)}`));
 
   const totalBsPersistido = (datos.totalVentaBs !== undefined && datos.totalVentaBs !== null)

@@ -23,9 +23,12 @@ function ContenidoConfirmacionVenta() {
     const ticketTotalsRef = useRef({ totalBs: null, exchangeRate: null });
 
     const products = order.products;
-        
-    const total = products.reduce((sum, product) => sum + (product[3] * product[1]), 0);
-    const totalBs = total * tipoCambio;
+    const deliveryPrice = Number(order.deliveryPrice || 0);
+    const productsTotal = products.reduce((sum, product) => sum + (product[3] * product[1]), 0);
+    const totalConDelivery = productsTotal + deliveryPrice;
+    const deliveryBs = tipoCambio ? Number((deliveryPrice * tipoCambio).toFixed(2)) : null;
+    const totalBs = totalConDelivery * tipoCambio;
+    const mostrarTarjetaDelivery = deliveryPrice > 0;
 
     const navegar = useNavigate();
     const pressTimerRef = useRef(null);
@@ -51,7 +54,7 @@ function ContenidoConfirmacionVenta() {
         if (!tipoCambio) {
             return null;
         }
-        return Number((total * tipoCambio).toFixed(2));
+        return Number((totalConDelivery * tipoCambio).toFixed(2));
     };
 
     const registrarVenta = (id) => {
@@ -71,6 +74,7 @@ function ContenidoConfirmacionVenta() {
             paymentMethod: order.paymentMethod,
             note: order.note,
             totalBs: totalBsPersistido,
+            deliveryPrice: deliveryPrice,
             products: productsArray
         }, async () => {
             if (isDineInSale) {
@@ -194,12 +198,16 @@ function ContenidoConfirmacionVenta() {
         }
 
         const totalBsCalculado = (exchangeRate)
-            ? Number((total * exchangeRate).toFixed(2))
+            ? Number((totalConDelivery * exchangeRate).toFixed(2))
+            : null;
+        const deliveryPriceBsCalculado = (exchangeRate)
+            ? Number((deliveryPrice * exchangeRate).toFixed(2))
             : null;
 
         ticketTotalsRef.current = {
             totalBs: totalBsCalculado,
-            exchangeRate: exchangeRate ?? null
+            exchangeRate: exchangeRate ?? null,
+            deliveryPriceBs: deliveryPriceBsCalculado
         };
         
         const data = {
@@ -226,7 +234,9 @@ function ContenidoConfirmacionVenta() {
             totals: {
                 totalBs: ticketTotalsRef.current.totalBs,
                 exchangeRate: ticketTotalsRef.current.exchangeRate
-            }
+            },
+            deliveryPriceUsd: deliveryPrice,
+            deliveryPriceBs: ticketTotalsRef.current.deliveryPriceBs ?? deliveryBs
         };
 
         await printOrderTicket(data, () => afterPrintDialog(id)); 
@@ -274,15 +284,16 @@ function ContenidoConfirmacionVenta() {
                         <TarjetaNota nota={ order.note } />
                     )}
 
+                    {mostrarTarjetaDelivery && (
+                        <TarjetaDelivery monto={deliveryPrice} montoBs={deliveryBs} />
+                    )}
+
 
                 </div>
 
                 <div className='totalVenta'>
-                    <span className='totalTexto'>Total: ${total.toFixed(2)}</span>
-                    <span className='totalTexto'>Bs.{totalBs.toFixed(2)}</span>
-                   
-                  
-
+                    <span className='totalTexto totalPrincipal'>Total: ${totalConDelivery.toFixed(2)}</span>
+                    {tipoCambio ? <span className='totalTexto totalPrincipal'>Total: Bs.{totalBs.toFixed(2)}</span> : null}
                 </div>
 
             </div>

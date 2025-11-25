@@ -114,7 +114,7 @@ export async function addSale(req, res) {
         const body = req.body;
         const products = body.products;
 
-        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber, PaymentMethod, TotalBs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber, PaymentMethod, TotalBs, DeliveryPrice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const productQuery = `INSERT INTO SaleDetails (ID, Name, Price, Quantity) VALUES (?, ?, ?, ?)`;
         
         const [results, fields] = await db.execute(saleQuery, [
@@ -127,7 +127,8 @@ export async function addSale(req, res) {
             body.address || null,
             body.tableNumber || null,
             body.paymentMethod,
-            body.totalBs ?? null
+            body.totalBs ?? null,
+            body.deliveryPrice ?? 0
         ]);
 
         products.map( async (product) => {
@@ -158,7 +159,8 @@ export async function updateSale(req, res) {
             "Note = ?",
             "Direction = ?",
             "TableNumber = ?",
-            "PaymentMethod = ?"
+            "PaymentMethod = ?",
+            "DeliveryPrice = ?"
         ];
 
         const updateValues = [
@@ -169,7 +171,8 @@ export async function updateSale(req, res) {
             body.note || null,
             body.address || null,
             body.tableNumber || null,
-            body.paymentMethod
+            body.paymentMethod,
+            body.deliveryPrice ?? 0
         ];
 
         if (body.totalBs !== undefined) {
@@ -209,13 +212,14 @@ export async function searchSale(req, res) {
                 s.ClientIdDocument, 
                 s.ClientName, 
                 s.Type, 
-                Sum(sd.Quantity * sd.Price) As Total 
+                Sum(sd.Quantity * sd.Price) + IFNULL(s.DeliveryPrice, 0) As Total,
+                s.DeliveryPrice
             FROM 
                 Sales s 
                 INNER JOIN SaleDetails sd ON s.ID = sd.ID
             ${condition}
             GROUP BY
-                s.ID, s.ClientIdDocument, s.ClientName, s.Type
+                s.ID, s.ClientIdDocument, s.ClientName, s.Type, s.DeliveryPrice
         `;
         
         const [results, fields] = await db.execute(dbQuery, hasID ? userQuery : null);
@@ -239,14 +243,16 @@ export async function getSaleSummary(req, res) {
                 s.ClientIdDocument, 
                 s.ClientName, 
                 s.Type, 
-                Sum(sd.Quantity * sd.Price) As Total,
-                s.TableNumber
+                Sum(sd.Quantity * sd.Price) + IFNULL(s.DeliveryPrice, 0) As Total,
+                s.TableNumber,
+                s.TotalBs,
+                s.DeliveryPrice
             FROM 
                 Sales s 
                 INNER JOIN SaleDetails sd ON s.ID = sd.ID
             ${condition}
             GROUP BY
-                s.ID, s.ClientIdDocument, s.ClientName, s.Type, s.TableNumber
+                s.ID, s.ClientIdDocument, s.ClientName, s.Type, s.TableNumber, s.TotalBs, s.DeliveryPrice
         `;
         
         const [results, fields] = await db.execute(query, data);
@@ -274,7 +280,8 @@ export async function getDetailedSale(req, res) {
                 s.Direction AS Address,
                 s.TableNumber,
                 s.PaymentMethod,
-                s.TotalBs
+                s.TotalBs,
+                s.DeliveryPrice
             FROM Sales s
             WHERE s.ID = ?
         `;

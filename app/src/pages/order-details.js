@@ -22,7 +22,7 @@ export default function OrderDetails() {
     const [isNewClient, foundName, foundAddress] = useClientFetchData(clientId);
     
     const [newClientValues, newClientSetters, getNewClientData] = useNewClientFormFields(clientId);
-    const [typeValues, typeSetters] = useFormFields(2);
+    const [typeValues, typeSetters] = useFormFields(3);
     const [tableValue, setTableValue] = useState(tableName || "");
     const [isTableLocked, setIsTableLocked] = useState(Boolean(tableName));
     const [isSaleTypeLocked, setIsSaleTypeLocked] = useState(Boolean(fromTable));
@@ -68,7 +68,18 @@ export default function OrderDetails() {
         fetchDeliverymen();
     }, []);
 
-    const detailsGetter = useDetailsGetter(clientId, isNewClient, newClientValues[0], foundName, typeValues[0], typeValues[1], deliverymanValue, tableValue, paymentMethod);
+    const detailsGetter = useDetailsGetter(
+        clientId,
+        isNewClient,
+        newClientValues[0],
+        foundName,
+        typeValues[0],
+        typeValues[1],
+        typeValues[2],
+        deliverymanValue,
+        tableValue,
+        paymentMethod
+    );
     
     return (
         <DashboardPage> 

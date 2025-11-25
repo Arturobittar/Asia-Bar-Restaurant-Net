@@ -112,27 +112,41 @@ export function useOnEditContinue(id, client, type, address, deliverymanName, ta
 
 export function useData() {
     const [data, setData] = useState([]);
+    const sanitizeRow = (row) => {
+        if (!Array.isArray(row)) return row;
+
+        const [id, clientId, clientName, type, total, table] = row;
+
+        return [id, clientId, clientName, type, table ?? ""];
+    };
     
     const fetchData = async () => {
         const fetched = await getTableData('sales');
-        setData(fetched);
+        setData(fetched.map(sanitizeRow));
     };
 
     useEffect(() => {
         fetchData();
     }, []);
 
-    return [data, setData];
+    const setSanitizedData = (rows) => setData(rows.map(sanitizeRow));
+
+    return [data, setSanitizedData];
 }
 
 export function useHeaderButtons(setData) {
     const navigate = useNavigate();
+    const sanitizeRow = (row) => {
+        if (!Array.isArray(row)) return row;
+        const [id, clientId, clientName, type, total, table] = row;
+        return [id, clientId, clientName, type, table ?? ""];
+    };
     
     const onNew = (id) => navigate(routes['Informacion de Venta']);
 
     const onSearch = async (id) => {
         const fetched = await getTableData(`search/sales/${id}`);
-        setData(fetched);
+        setData(fetched.map(sanitizeRow));
     };
 
     return [onNew, onSearch];
@@ -166,6 +180,22 @@ export function useActionButtons() {
                 product.Quantity
             ]));
 
+            const productsTotalUsd = products.reduce((sum, product) => sum + (Number(product.Price) * Number(product.Quantity)), 0);
+            const deliveryPriceUsd = Number(fetched.DeliveryPrice ?? 0);
+            const totalUsdConDelivery = productsTotalUsd + deliveryPriceUsd;
+
+            const totalBsNumber = fetched.TotalBs !== null && fetched.TotalBs !== undefined
+                ? Number(fetched.TotalBs)
+                : null;
+
+            const exchangeRate = (totalBsNumber && totalUsdConDelivery)
+                ? Number((totalBsNumber / totalUsdConDelivery).toFixed(4))
+                : null;
+
+            const deliveryPriceBs = (exchangeRate && deliveryPriceUsd)
+                ? Number((deliveryPriceUsd * exchangeRate).toFixed(2))
+                : null;
+
             saleAlert(
                 fetched.ID,
                 client,
@@ -176,7 +206,9 @@ export function useActionButtons() {
                 fetched.TableNumber || null,
                 fetched.Note || null,
                 fetched.PaymentMethod || null,
-                fetched.TotalBs ?? null
+                fetched.TotalBs ?? null,
+                deliveryPriceUsd,
+                deliveryPriceBs
             );
         };
 

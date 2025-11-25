@@ -46,7 +46,12 @@ export function TarjetaNota({ nota }){
 };
 
 
-export function TarjetaDelivery (){
+export function TarjetaDelivery ({ monto = 0, montoBs = null }){
+
+    const montoFormateado = Number.parseFloat(monto || 0).toFixed(2);
+    const montoBsFormateado = (montoBs !== null && montoBs !== undefined)
+        ? Number.parseFloat(montoBs).toFixed(2)
+        : null;
 
     return (
 
@@ -58,19 +63,22 @@ export function TarjetaDelivery (){
 
             <div className="precioTotalProducto">
 
-                <span className="precioTotalLabel">Total: </span>
-                <span className="precioTotalProductoTexto">5$</span>
-
+                <span className="precioTotalLabel">Delivery: </span>
+                <span className="precioTotalProductoTexto">${montoFormateado}</span>
 
             </div>
+
+            {montoBsFormateado !== null && (
+                <div className="montoDeliveryBs">
+                    <span className="precioTotalProductoTexto">Bs.{montoBsFormateado}</span>
+                </div>
+            )}
 
 
         </div>
 
 
     )
-
-
 
 
 }

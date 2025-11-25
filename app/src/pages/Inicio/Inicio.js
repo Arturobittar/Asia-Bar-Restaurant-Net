@@ -118,6 +118,22 @@ function Inicio(){
                                                     p.Quantity || 0
                                                 ]);
 
+                                                const productsTotalUsd = products.reduce((sum, product) => sum + (Number(product.Price || 0) * Number(product.Quantity || 0)), 0);
+                                                const deliveryPriceUsd = Number(fetched.DeliveryPrice ?? 0);
+                                                const totalUsdConDelivery = productsTotalUsd + deliveryPriceUsd;
+
+                                                const totalBsNumber = (fetched.TotalBs !== null && fetched.TotalBs !== undefined)
+                                                    ? Number(fetched.TotalBs)
+                                                    : null;
+
+                                                const exchangeRate = (totalBsNumber && totalUsdConDelivery)
+                                                    ? Number((totalBsNumber / totalUsdConDelivery).toFixed(4))
+                                                    : null;
+
+                                                const deliveryPriceBs = (exchangeRate && deliveryPriceUsd)
+                                                    ? Number((deliveryPriceUsd * exchangeRate).toFixed(2))
+                                                    : null;
+
                                                 saleAlert(
                                                     fetched.ID || 'N/A',
                                                     client,
@@ -128,7 +144,9 @@ function Inicio(){
                                                     fetched.TableNumber || null,
                                                     fetched.Note || null,
                                                     fetched.PaymentMethod || null,
-                                                    fetched.TotalBs ?? null
+                                                    fetched.TotalBs ?? null,
+                                                    deliveryPriceUsd,
+                                                    deliveryPriceBs
                                                 );
                                             } catch (error) {
                                                 console.error("Error detallado:", {
@@ -146,7 +164,7 @@ function Inicio(){
                                                 clientName={product[2]}
                                                 tipoDePedido={product[3]}
                                                 mesa={product[5]}
-                                                totalTicket={product[4]} 
+                                                totalTicket={product[4]}
                                                 onOpen={() => showAlert()}
                                                 onPrint={() => onPrint(product[0])}
                                             />

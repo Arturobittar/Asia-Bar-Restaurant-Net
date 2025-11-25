@@ -85,7 +85,7 @@ function getRowHtmlString(row) {
     return htmlString;
 }
 
-function getProductsTable(data, totalGeneralBs = null) {
+function getProductsTable(data, totalGeneralBs = null, deliveryPriceUsd = 0, deliveryPriceBs = null) {
     let htmlString = "<h3 class=\"alert-subtitle\">Productos</h3>\n";
     
     htmlString += "<div class=\"products-table-container\">";
@@ -108,6 +108,26 @@ function getProductsTable(data, totalGeneralBs = null) {
     });
     
     const totalBsNumber = (totalGeneralBs !== null && totalGeneralBs !== undefined) ? Number(totalGeneralBs) : null;
+    const deliveryUsdNumber = Number(deliveryPriceUsd ?? 0);
+    const deliveryBsNumber = (deliveryPriceBs !== null && deliveryPriceBs !== undefined)
+        ? Number(deliveryPriceBs)
+        : null;
+
+    if (!Number.isNaN(deliveryUsdNumber) && deliveryUsdNumber > 0) {
+        const costText = deliveryBsNumber !== null && Number.isFinite(deliveryBsNumber)
+            ? `${deliveryUsdNumber.toFixed(2)}$ / Bs ${deliveryBsNumber.toFixed(2)}`
+            : `${deliveryUsdNumber.toFixed(2)}$`;
+
+        const getFieldHtml = (title, value) => "\t<p class=\"product-field\"><b>" + title + ":</b> " + value + "</p>\n";
+
+        htmlString += getFieldHtml("Nombre", "Delivery")
+            + getFieldHtml("Costo Unitario", costText)
+            + getFieldHtml("Cantidad", 1);
+
+        htmlString += "\t<p class=\"total-field\">" + "<span>Total:</span> <span>" + deliveryUsdNumber.toFixed(2) + "$</span>" + "</p>\n";
+
+        totalGeneral += deliveryUsdNumber;
+    }
 
     // Agregar total general
     htmlString += "\t<div class=\"grand-total\">";
@@ -129,7 +149,7 @@ export default class InfoField {
     }
 }
 
-function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod) {
+function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod, deliveryPriceUsd = 0, deliveryPriceBs = null) {
     let htmlString = "<h3 class=\"alert-subtitle\">Información del Pedido</h3>\n";
 
     const data = [
@@ -173,14 +193,15 @@ function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, no
     return htmlString;
 }
 
-function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs) {
-    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod) + getProductsTable(products, totalBs);
+function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs, deliveryPriceUsd = 0, deliveryPriceBs = null) {
+    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod, deliveryPriceUsd, deliveryPriceBs)
+        + getProductsTable(products, totalBs, deliveryPriceUsd, deliveryPriceBs);
 }
 
-export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null, paymentMethod = null, totalBs = null) {
+export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null, paymentMethod = null, totalBs = null, deliveryPriceUsd = 0, deliveryPriceBs = null) {
     Swal.fire({
         title: `Orden #${number}`,
-        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs),
+        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs, deliveryPriceUsd, deliveryPriceBs),
         confirmButtonText: "Vale",
         confirmButtonColor: redHue,
     });

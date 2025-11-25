@@ -341,11 +341,22 @@ export function MasVendidos({top, nombre, srcImg, precio, totalVentas, onOpen}){
 
 
 
-export function PedidoTicket({numeroPedido, clientName, totalProductos, tipoDePedido, mesa, totalTicket, onOpen, onPrint}){
+export function PedidoTicket({
+   numeroPedido,
+   clientName,
+   totalProductos,
+   tipoDePedido,
+   mesa,
+   totalTicket,
+   onOpen,
+   onPrint
+}){
 
    const esParaComerAqui = tipoDePedido && 
       (tipoDePedido.toLowerCase().includes('comer') || 
        tipoDePedido.toLowerCase().includes('aquí'));
+
+   const totalUsdNumber = Number(totalTicket ?? 0);
 
    return (
 
@@ -360,7 +371,7 @@ export function PedidoTicket({numeroPedido, clientName, totalProductos, tipoDePe
             )}
          </div>
 
-         <span className="totalTicket">{Number.parseFloat(totalTicket).toFixed(2)}$</span>
+         <span className="totalTicket">{totalUsdNumber.toFixed(2)}$</span>
 
          <div className="contenedorBtnPedidoTicket">
             <button className="botonInformacionTicket" onClick={() => onOpen()}>
@@ -374,5 +385,6 @@ export function PedidoTicket({numeroPedido, clientName, totalProductos, tipoDePe
       </div>
 
    )
+
 
 }

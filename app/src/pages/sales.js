@@ -1,7 +1,7 @@
 import TablePage from "../components/features/table/table-page.js";
 import { useData, useHeaderButtons, useActionButtons } from "../hooks/sales.js";
 
-const fields = ["N°", "ID. Cliente", "Cliente", "Tipo", "Total", "Mesa"];
+const fields = ["N°", "ID. Cliente", "Cliente", "Tipo", "Mesa"];
 
 function SalesControl() {
     const [data, setData] = useData();

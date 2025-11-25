@@ -45,6 +45,23 @@
     font-weight: bold;
 
 }
+.precioTotalProductoTexto.montoformateado{
+
+    align-items: end;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.montoDeliveryBs {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.montoDeliveryBs .precioTotalProductoTexto {
+    font-weight: bold;
+}
 
 .contenidoTarjetaNota {
     color: #333;

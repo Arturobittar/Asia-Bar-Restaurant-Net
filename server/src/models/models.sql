@@ -50,7 +50,8 @@ CREATE TABLE Sales (
     Direction VARCHAR(100),
     TableNumber VARCHAR(20),
     PaymentMethod VARCHAR(200) NOT NULL,
-    TotalBs DECIMAL(12, 2)
+    TotalBs DECIMAL(12, 2),
+    DeliveryPrice DECIMAL(10, 2) DEFAULT 0
 );
 
 CREATE TABLE SaleDetails (

@@ -3,6 +3,7 @@ import Table from "../utils/table.js";
 export const fieldTypes = ["number", "int", "combo", "pseudocombo", "bool", "phone", "id", "text"];
 
 export const saleOptions = ["Comer Aquí", "Para llevar", "Delivery"];
+export const deliveryPrice = 5; // Precio del delivery en $
 export const cityOptions = ["Barcelona", "Lechería", "Puerto la Cruz", "Guanta"];
 export const userRoles = ["Administrador", "Usuario"];
 export const tableOptions = Array.from({ length: 20 }, (_, index) => `mesa ${index + 1}`);

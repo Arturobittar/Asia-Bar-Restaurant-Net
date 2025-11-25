@@ -33,8 +33,8 @@ export function useOrderClearer() {
 export function useOrderDetailsChanger() {
     const { order, setOrder } = useContext(OrderContext);
 
-    const setNewDetails = async (clientID, clientName, type, address, deliverymanName, tableNumber, paymentMethod) => {
-        const newOrder = await new Order(clientID, clientName, type, address, deliverymanName, tableNumber, paymentMethod, order.products, order.note); 
+    const setNewDetails = async (clientID, clientName, type, address, deliveryPrice, deliverymanName, tableNumber, paymentMethod) => {
+        const newOrder = await new Order(clientID, clientName, type, address, deliveryPrice, deliverymanName, tableNumber, paymentMethod, order.products, order.note); 
         await setOrder(newOrder);
     };
     
@@ -81,13 +81,22 @@ export function useOnDetailsSubmit() {
             );
         }
 
-        detailsChanger(details.clientID, details.clientName, details.type, details.address, details.deliverymanName, details.tableNumber, details.paymentMethod);
+        detailsChanger(
+            details.clientID,
+            details.clientName,
+            details.type,
+            details.address,
+            details.deliveryPrice,
+            details.deliverymanName,
+            details.tableNumber,
+            details.paymentMethod
+        );
 
         navigate(route);
     } 
 }
 
-export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliverymanName, tableNumber, paymentMethod) {
+export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliveryPrice, deliverymanName, tableNumber, paymentMethod) {
     const clientName = isNewClient ? newName : foundName;
 
     return () => { 
@@ -96,6 +105,7 @@ export function useDetailsGetter(clientID, isNewClient, newName, foundName, type
             clientName: clientName, 
             type: type,
             address: address,
+            deliveryPrice: Number.parseFloat(deliveryPrice) || 0,
             deliverymanName: deliverymanName,
             tableNumber: tableNumber,
             paymentMethod: paymentMethod
@@ -209,7 +219,18 @@ export function useOrderChanger(products, note) {
     const { order, setOrder } = useContext(OrderContext);
 
     const setNewInfo = async () => {
-        const newOrder = await new Order(order.clientID, order.clientName, order.type, order.address, order.deliverymanName, order.tableNumber, order.paymentMethod, products, note); 
+        const newOrder = await new Order(
+            order.clientID,
+            order.clientName,
+            order.type,
+            order.address,
+            order.deliveryPrice,
+            order.deliverymanName,
+            order.tableNumber,
+            order.paymentMethod,
+            products,
+            note
+        ); 
         await setOrder(newOrder);
     };
     
