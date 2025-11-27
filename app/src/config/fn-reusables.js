@@ -27,3 +27,109 @@ export function formatSequentialNumberInput(inputValue = "") {
 
     return trimmed;
 }
+
+
+
+// fn-reusables.js
+
+// ... (código existente)
+
+/**
+ * Crea un componente de combobox reutilizable
+ * @param {Object} props - Propiedades del combobox
+ * @param {string} props.value - Valor seleccionado actualmente
+ * @param {Function} props.onChange - Función que se ejecuta al cambiar la selección
+ * @param {Array} props.options - Opciones del combobox
+ * @param {string} [props.placeholder="Selecciona"] - Texto de marcador de posición
+ * @param {string} [props.dropdownId] - ID único para el dropdown
+ * @returns {JSX.Element} Componente de combobox
+ */
+export function createDropdown({ value, onChange, options, placeholder = "Selecciona", dropdownId }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    useEffect(() => {
+        const closeDropdown = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsOpen(false);
+                buttonRef.current?.focus();
+            }
+        };
+
+        document.addEventListener('mousedown', closeDropdown);
+        document.addEventListener('touchstart', closeDropdown);
+        document.addEventListener('keydown', onKeyDown);
+
+        return () => {
+            document.removeEventListener('mousedown', closeDropdown);
+            document.removeEventListener('touchstart', closeDropdown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, []);
+
+    const handleSelect = (option) => {
+        onChange(option);
+        setIsOpen(false);
+        buttonRef.current?.focus();
+    };
+
+    return (
+        <div className="custom-dropdown" ref={containerRef}>
+            <button
+                type="button"
+                className="custom-dropdown__toggle"
+                onClick={() => setIsOpen((prev) => !prev)}
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        setIsOpen(true);
+                    }
+                }}
+                ref={buttonRef}
+                id={dropdownId}
+            >
+                <span>{value || placeholder}</span>
+                <span className="custom-dropdown__icon">▾</span>
+            </button>
+
+            {isOpen && (
+                <div className="custom-dropdown__menu" role="listbox">
+                    {options.map((option) => (
+                        <button
+                            key={`${dropdownId}-option-${option}`}
+                            type="button"
+                            className={`custom-dropdown__option ${option === value ? 'is-selected' : ''}`}
+                            onClick={() => handleSelect(option)}
+                            role="option"
+                            aria-selected={option === value}
+                        >
+                            {option}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            <select
+                className="custom-dropdown__native-select"
+                value={value || ''}
+                onChange={(event) => onChange(event.target.value)}
+                tabIndex={-1}
+                required
+            >
+                <option value="" disabled>{placeholder}</option>
+                {options.map((option) => (
+                    <option key={`${dropdownId}-hidden-${option}`} value={option}>
+                        {option}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+}

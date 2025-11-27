@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import "./widgetsInicioCss/Mesa.css"
 /*import "./widgetsInicioCss/RecienAgregado.css"*/
 import "./widgetsInicioCss/MasVendidos.css"
@@ -6,10 +6,12 @@ import "./widgetsInicioCss/PedidoTicket.css"
 import {InformacionDelProductoModal } from "./modalesInicio.js"
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../config/routes.js'; 
-import { updateTableStatus, getSaleDetails } from '../../utils/api.js';
+import { updateTableStatus, getSaleDetails, moveTableOccupancy } from '../../utils/api.js';
 import { errorAlert, saleAlert } from "../../utils/alerts.js";
 
 import { Info, ReceiptText } from "lucide-react";
+import SessionContext from "../../context/session.js";
+import { Roles } from "../../config/roles.js";
 
 
 // Estas constantes solo estan para las pruebas
@@ -42,7 +44,7 @@ const DatosPedidoPrueba = {
 
 }
 
-export function Mesa({ nombre, data, onOpen, onRefresh }){
+export function Mesa({ nombre, data, onOpen, onRefresh, moveRequest, onStartMove, onCancelMove, onSelectMoveTarget, isMoveInProgress }){
 
    const navigate = useNavigate();
    const [mostrarOpciones, setMostrarOpciones] = useState(false);
@@ -50,12 +52,19 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
    const [isUpdating, setIsUpdating] = useState(false);
    const [isLoadingInfo, setIsLoadingInfo] = useState(false);
    const widgetRef = useRef(null);
+   const { session } = useContext(SessionContext);
+   const userRole = session?.rol;
 
    const estado = data?.Status ?? "desocupada";
    const timerStart = useMemo(() => data?.TimerStart ? new Date(data.TimerStart) : null, [data?.TimerStart]);
    const deliveryTimeSeconds = data?.DeliveryTimeSeconds ?? null;
    const saleId = data?.SaleID ?? null;
    const normalizedName = nombre?.toLowerCase();
+   const isMoveActive = Boolean(moveRequest);
+   const isSourceInMove = moveRequest?.from === normalizedName;
+   const canMoveTable = (estado === "ordenada" || estado === "consumiendo") && userRole === Roles['admin'];
+   const canBeMoveTarget = isMoveActive && !isSourceInMove && estado === "desocupada";
+   const isDisabledDuringMove = isMoveActive && !isSourceInMove && !canBeMoveTarget;
 
    const estadoLabel = {
       desocupada: "Desocupada",
@@ -88,8 +97,25 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
    }, [estado, timerStart]);
 
    const toggleMenu = () => {
-      if (isUpdating) return;
+      if (isUpdating || isMoveActive) return;
       setMostrarOpciones(prev => !prev);
+   };
+
+   const handleWidgetClick = () => {
+      if (isUpdating) return;
+
+      if (isMoveActive) {
+         if (isSourceInMove) {
+            return;
+         }
+
+         if (canBeMoveTarget && !isMoveInProgress) {
+            onSelectMoveTarget?.(normalizedName);
+         }
+         return;
+      }
+
+      toggleMenu();
    };
 
    useEffect(() => {
@@ -206,21 +232,46 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
    const mostrarMenu = mostrarOpciones && !isUpdating;
 
    return (
-      <div className={`widgetMesa ${estado}`} onClick={toggleMenu} ref={widgetRef}>
-         <div className="mesaHeader">
-            <span className="estadoMesa">{estadoLabel}</span>
-            {saleId && <span className="ventaTag">Orden #{saleId}</span>}
-         </div>
+      <div
+         className={[`widgetMesa ${estado}`,
+            isSourceInMove ? 'mesa--move-source' : '',
+            canBeMoveTarget ? 'mesa--move-target' : '',
+            isDisabledDuringMove ? 'mesa--move-disabled' : ''
+         ].filter(Boolean).join(' ')}
+         onClick={handleWidgetClick}
+         ref={widgetRef}
+      >
+         {!isSourceInMove && (
+            <div className="mesaHeader">
+               <span className="estadoMesa">{estadoLabel}</span>
+               {saleId && <span className="ventaTag">Orden #{saleId}</span>}
+            </div>
+         )}
 
          <div className="mesaBody">
             <p className="nombreMesa">{nombre}</p>
-            {estado === "ordenada" && (
-               <p className="timer">⏱ {formatearTimer(elapsedSeconds)}</p>
+            {isSourceInMove ? (
+               <div className="mesaMoveSourceMessage">
+                  <p>Selecciona una mesa desocupada</p>
+                  <button type="button" onClick={onCancelMove} disabled={isMoveInProgress}>Cancelar</button>
+               </div>
+            ) : (
+               <>
+                  {estado === "ordenada" && (
+                     <p className="timer">⏱ {formatearTimer(elapsedSeconds)}</p>
+                  )}
+
+                  {estado === "consumiendo" && Number.isFinite(deliveryTimeSeconds) && (
+                     <p className="deliveryTime">Tiempo hasta entrega: {formatearTimer(deliveryTimeSeconds)}</p>
+                  )}
+               </>
             )}
          </div>
 
-         {estado === "consumiendo" && Number.isFinite(deliveryTimeSeconds) && (
-            <p className="deliveryTime">Tiempo hasta entrega: {formatearTimer(deliveryTimeSeconds)}</p>
+         {canBeMoveTarget && (
+            <div className="mesaMoveIndicator mesaMoveIndicator--target">
+               <p>Haz clic para mover aquí</p>
+            </div>
          )}
 
          {mostrarMenu && (
@@ -243,6 +294,11 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
                      <button className="opcionMesa info" type="button" onClick={handleInfo}>
                         <Info size={18} />
                      </button>
+                     {canMoveTable && (
+                        <button className="opcionMesa" type="button" onClick={() => onStartMove?.(nombre)} disabled={isUpdating || isMoveActive}>
+                           Mover mesa
+                        </button>
+                     )}
                   </>
                )}
 
@@ -250,6 +306,11 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
                   <>
                      <button className="opcionMesa" type="button" onClick={handleOrdenar} disabled={isUpdating}>Ordenar</button>
                      <button className="opcionMesa" type="button" onClick={handleDesocupar} disabled={isUpdating}>Desocupar</button>
+                     {canMoveTable && (
+                        <button className="opcionMesa" type="button" onClick={() => onStartMove?.(nombre)} disabled={isUpdating || isMoveActive}>
+                           Mover mesa
+                        </button>
+                     )}
                   </>
                )}
             </div>
@@ -265,8 +326,7 @@ export function Mesa({ nombre, data, onOpen, onRefresh }){
    );
 }
 
-
-
+// ... rest of the code remains the same ...
 
 
 

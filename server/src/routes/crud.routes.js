@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getAllEndpointFunctions, getEndpointFunctions, postEndpointFunctions, deleteEndpointFunctions, putEndpointFunctions, searchEndpointFunctions } from '../controllers/crud.controllers.js';
-import { getLastSaleID, getSaleSummary, addSale, deleteSale, getDetailedSale, updateSale, searchSale, getTopProducts, getTablesStatus, updateTableStatus } from '../libs/crudOperations.js';
+import { getLastSaleID, getSaleSummary, addSale, deleteSale, getDetailedSale, updateSale, searchSale, getTopProducts, getTablesStatus, updateTableStatus, moveTableOccupancy } from '../libs/crudOperations.js';
 import { validateToken } from '../middlewares/validateToken.js';
 
 const crudRouter = Router();
@@ -45,5 +45,6 @@ crudRouter.get("/top-products", getTopProducts);
 
 crudRouter.get("/tables", getTablesStatus);
 crudRouter.put("/tables/:name", updateTableStatus);
+crudRouter.post("/tables/move", moveTableOccupancy);
 
 export default crudRouter;

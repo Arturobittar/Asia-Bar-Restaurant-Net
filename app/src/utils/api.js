@@ -108,6 +108,21 @@ export const updateTableStatus = async function(name, payload) {
     });
 }
 
+export const moveTableOccupancy = async function(fromName, toName) {
+    if (!fromName || !toName) {
+        return;
+    }
+
+    return api_fetch({
+        endpoint: 'tables/move',
+        method: 'POST',
+        body: {
+            fromName: fromName.trim().toLowerCase(),
+            toName: toName.trim().toLowerCase()
+        }
+    });
+}
+
 export const onCreate = function(e, tableName, getData, onDone) {
     e.preventDefault(); 
 

@@ -20,6 +20,22 @@
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
+.widgetMesa.mesa--move-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+.widgetMesa.mesaMoveIndicator--target {
+    background: rgba(46, 204, 113, 0.9);
+    color: #0c331d;
+    border: 2px solid rgba(46, 204, 113, 0.8);
+}
+
+.widgetMesa.mesa--move-source {
+    box-shadow: 0 0 12px rgba(255, 165, 0, 0.9);
+    border: 2px solid rgba(255, 165, 0, 0.8);
+}
+
 .widgetMesa:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 14px rgba(0,0,0,0.15);
@@ -30,18 +46,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    min-height: 50px;
+    gap: 4px;
+    min-height: 58px;
+    text-transform: none;
 }
 
 .estadoMesa {
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .ventaTag {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
+    color: rgba(0, 0, 0, 0.75);
 }
 
 .timer {
@@ -61,15 +81,46 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 4px;
+    gap: 6px;
     width: 100%;
     padding-top: 8px;
 }
 
-.nombreMesa{
-    font-size: 1.8rem;
+.mesaMoveSourceMessage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.78);
+    color: #fff;
+    font-size: 0.9rem;
+    text-align: center;
+    width: 100%;
+}
+
+.mesaMoveSourceMessage button {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
     font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    color: #222;
+}
+
+.mesaMoveSourceMessage button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.nombreMesa{
+    font-size: 1.7rem;
+    font-weight: 700;
     margin: 0;
+    text-transform: lowercase;
 }
 
 

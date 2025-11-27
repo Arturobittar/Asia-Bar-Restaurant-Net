@@ -7,7 +7,7 @@ import { Mesa, RecienAgregado, MasVendidos, PedidoTicket } from "./widgetsInicio
 
 import { useTicketPrinter } from '../../hooks/home.js';
 
-import { getTopProducts, getTableData, getRegisterData, getSaleDetails, getTablesStatus } from '../../utils/api.js';
+import { getTopProducts, getTableData, getRegisterData, getSaleDetails, getTablesStatus, moveTableOccupancy } from '../../utils/api.js';
 import { tableOptions } from '../../config/tables.js';
 
 import { saleAlert } from '../../utils/alerts.js';
@@ -18,6 +18,8 @@ function Inicio(){
     const [mostRecentProducts, setMostRecentProducts] = useState([]);
     const [topProducts, setTopProducts] = useState([]);
     const [tablesStatus, setTablesStatus] = useState({});
+    const [moveRequest, setMoveRequest] = useState(null);
+    const [isMoveInProgress, setIsMoveInProgress] = useState(false);
     const onPrint = useTicketPrinter();
 
     useEffect(() => {
@@ -67,6 +69,31 @@ function Inicio(){
         setModalContenido(modalContenido);
         setModalAbierto(true);
     };
+
+    const onStartMove = useCallback((tableName) => {
+        if (!tableName) return;
+        setMoveRequest({ from: tableName.toLowerCase(), label: tableName });
+    }, []);
+
+    const onCancelMove = useCallback(() => {
+        if (isMoveInProgress) return;
+        setMoveRequest(null);
+    }, [isMoveInProgress]);
+
+    const onSelectMoveTarget = useCallback(async (targetTable) => {
+        if (!moveRequest || !targetTable || isMoveInProgress) return;
+        setIsMoveInProgress(true);
+        try {
+            await moveTableOccupancy(moveRequest.from, targetTable);
+            await refreshTablesStatus();
+            setMoveRequest(null);
+        } catch (error) {
+            console.error("No se pudo mover la mesa", error);
+            errorAlert("Error", "No se pudo mover la mesa. Inténtalo nuevamente.");
+        } finally {
+            setIsMoveInProgress(false);
+        }
+    }, [moveRequest, isMoveInProgress, refreshTablesStatus]);
 
     return (
     
@@ -186,6 +213,11 @@ function Inicio(){
                                 data={tablesStatus[tableName.toLowerCase()]}
                                 onOpen={onOpen}
                                 onRefresh={refreshTablesStatus}
+                                moveRequest={moveRequest}
+                                onStartMove={onStartMove}
+                                onCancelMove={onCancelMove}
+                                onSelectMoveTarget={onSelectMoveTarget}
+                                isMoveInProgress={isMoveInProgress}
                             />
                         ))}
                            

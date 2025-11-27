@@ -3,7 +3,9 @@ import { RequiredInput, WarningText, DisabledInputBox } from '../../ui/form.js';
 import { SubmitButton } from '../../ui/buttons.js';
 
 import { saleOptions } from '../../../config/tables.js';
-import { formatSequentialCurrencyInput } from '../../../config/fn-reusables.js';
+import { formatSequentialCurrencyInput, createDropdown } from '../../../config/fn-reusables.js';
+
+import { useCallback } from 'react';
 
 function Input(title, type) {
     this.title = title;
@@ -17,11 +19,9 @@ function NewClientInputs({ values, setters }) {
         new Input("Teléfono del Cliente", "phone")
     ];
 
-    const totalInputs = inputs.length;
-
     return (
         <>
-            {inputs.map( (input, i) => 
+            {inputs.map((input, i) => 
                 <RequiredInput 
                     key={`${input.title}-${i}`}
                     type={input.type}
@@ -49,23 +49,24 @@ export function ClientInfo({ isNewClient, foundName, values, setters }) {
         <DisabledInputBox title="Nombre de Cliente Encontrado" value={foundName} />;
 }
 
-export function OptionDropdown({
-    label,
-    placeholder,
-    options,
-    value,
-    onChange,
-    isLocked = false,
-    dropdownId
+export function OptionDropdown({ 
+    label, 
+    value, 
+    onChange, 
+    options, 
+    placeholder = "Selecciona", 
+    dropdownId,
+    isLocked = false 
 }) {
+    const Dropdown = useCallback(createDropdown, []);
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef(null);
     const buttonRef = useRef(null);
-    const generatedId = dropdownId ?? `${label.toLowerCase().replace(/\s+/g, '-')}-selector`;
+    const generatedId = dropdownId ?? `${label?.toLowerCase().replace(/\s+/g, '-')}-selector`;
 
     useEffect(() => {
         const closeDropdown = (event) => {
-            if (!containerRef.current) return;
+            if (!containerRef.current || !event.target) return;
             if (!containerRef.current.contains(event.target)) {
                 setIsOpen(false);
             }
@@ -89,24 +90,14 @@ export function OptionDropdown({
         };
     }, []);
 
-    useEffect(() => {
-        if (isLocked) {
-            setIsOpen(false);
-        }
-    }, [isLocked]);
-
-    const handleToggle = () => {
-        if (isLocked) return;
-        setIsOpen((prev) => !prev);
-    };
-
-    const handleToggleKeyDown = (event) => {
-        if (isLocked) return;
-        if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
-            event.preventDefault();
-            setIsOpen(true);
-        }
-    };
+    if (isLocked) {
+        return (
+            <DisabledInputBox 
+                title={label} 
+                value={value} 
+            />
+        );
+    }
 
     const handleSelect = (option) => {
         onChange(option);
@@ -114,60 +105,73 @@ export function OptionDropdown({
         buttonRef.current?.focus();
     };
 
+    const handleToggle = () => {
+        if (isLocked) return;
+        setIsOpen(!isOpen);
+    };
+
+    const handleKeyDown = (e) => {
+        if (isLocked) return;
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            setIsOpen(true);
+        }
+    };
+
     return (
-        <div className="input-box margined custom-dropdown" ref={containerRef}>
-            <label className="input-title" htmlFor={generatedId}>{label}</label>
-            <button
-                id={generatedId}
-                type="button"
-                className={`custom-dropdown__toggle ${isLocked ? 'is-locked' : ''}`}
-                onClick={handleToggle}
-                onKeyDown={handleToggleKeyDown}
-                ref={buttonRef}
-                aria-disabled={isLocked}
-            >
-                <span>{value || placeholder}</span>
-                <span className="custom-dropdown__icon">▾</span>
-            </button>
+        <div className="input-box margined">
+            {label && <label className="input-title" htmlFor={generatedId}>{label}</label>}
+            <div className="custom-dropdown" ref={containerRef}>
+                <button
+                    type="button"
+                    className="custom-dropdown__toggle"
+                    onClick={handleToggle}
+                    onKeyDown={handleKeyDown}
+                    ref={buttonRef}
+                    id={generatedId}
+                    aria-haspopup="listbox"
+                    aria-expanded={isOpen}
+                >
+                    <span>{value || placeholder}</span>
+                    <span className="custom-dropdown__icon">▾</span>
+                </button>
 
-            {isOpen && (
-                <div className="custom-dropdown__menu" role="listbox">
+                {isOpen && (
+                    <div className="custom-dropdown__menu" role="listbox">
+                        {options.map((option) => (
+                            <button
+                                key={option}
+                                type="button"
+                                className={`custom-dropdown__option ${option === value ? 'is-selected' : ''}`}
+                                onClick={() => handleSelect(option)}
+                                role="option"
+                                aria-selected={option === value}
+                            >
+                                {option}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <select
+                    className="custom-dropdown__native-select"
+                    value={value || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    tabIndex={-1}
+                    required
+                    aria-hidden="true"
+                >
+                    <option value="" disabled>{placeholder}</option>
                     {options.map((option) => (
-                        <button
-                            key={option}
-                            type="button"
-                            className={`custom-dropdown__option ${option === value ? 'is-selected' : ''}`}
-                            onClick={() => handleSelect(option)}
-                            role="option"
-                            aria-selected={option === value}
-                        >
+                        <option key={`${generatedId}-hidden-${option}`} value={option}>
                             {option}
-                        </button>
+                        </option>
                     ))}
-                </div>
-            )}
-
-            <select
-                className="custom-dropdown__native-select"
-                value={value || ''}
-                onChange={(event) => {
-                    if (!isLocked) {
-                        onChange(event.target.value);
-                    }
-                }}
-                required
-                tabIndex={-1}
-                disabled={isLocked}
-            >
-                <option value="" disabled>{placeholder}</option>
-                {options.map((option) => (
-                    <option key={`${generatedId}-hidden-${option}`} value={option}>{option}</option>
-                ))}
-            </select>
+                </select>
+            </div>
         </div>
     );
 }
-
 export function TypeInputs({ values, setters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked, isSaleTypeLocked }) {
     const deliveryPriceValue = values[2] ?? '0.00';
 

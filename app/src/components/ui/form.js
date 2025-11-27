@@ -1,9 +1,132 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Search } from "lucide-react";
 import './form.css';
 
 import { idTypes, phonePrefixes, cityOptions } from "../../config/tables.js";
+
+function DropdownSelect({
+    value,
+    onChange,
+    options,
+    placeholder = "Selecciona",
+    dropdownId,
+    disabled = false,
+    className = '',
+    listSize
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    useEffect(() => {
+        const closeDropdown = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target))
+                setIsOpen(false);
+        };
+
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsOpen(false);
+                buttonRef.current?.focus();
+            }
+        };
+
+        document.addEventListener('mousedown', closeDropdown);
+        document.addEventListener('touchstart', closeDropdown);
+        document.addEventListener('keydown', onKeyDown);
+
+        return () => {
+            document.removeEventListener('mousedown', closeDropdown);
+            document.removeEventListener('touchstart', closeDropdown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, []);
+
+    const handleSelect = (option) => {
+        if (disabled) return;
+
+        onChange(option);
+        setIsOpen(false);
+        buttonRef.current?.focus();
+    };
+
+    const handleToggle = () => {
+        if (disabled) return;
+        setIsOpen((prev) => !prev);
+    };
+
+    const handleKeyDown = (event) => {
+        if (disabled) return;
+
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            setIsOpen(true);
+        }
+    };
+
+    const combinedClassName = ['custom-dropdown', className, disabled ? 'is-disabled' : '']
+        .filter(Boolean)
+        .join(' ');
+    const menuStyle = listSize ? { maxHeight: `${Number(listSize) * 40}px` } : undefined;
+
+    return (
+        <div className={combinedClassName} ref={containerRef}>
+            <button
+                type="button"
+                className={`custom-dropdown__toggle ${disabled ? 'is-disabled' : ''}`.trim()}
+                onClick={handleToggle}
+                onKeyDown={handleKeyDown}
+                ref={buttonRef}
+                id={dropdownId}
+                disabled={disabled}
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
+                aria-disabled={disabled}
+            >
+                <span>{value || placeholder}</span>
+                <span className="custom-dropdown__icon">▾</span>
+            </button>
+
+            {isOpen && (
+                <div className="custom-dropdown__menu" role="listbox" style={menuStyle}>
+                    {options.map((option) => (
+                        <button
+                            key={`${dropdownId}-option-${option}`}
+                            type="button"
+                            className={`custom-dropdown__option ${option === value ? 'is-selected' : ''}`}
+                            onClick={() => handleSelect(option)}
+                            role="option"
+                            aria-selected={option === value}
+                        >
+                            {option}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            <select
+                className="custom-dropdown__native-select"
+                value={value || ''}
+                onChange={(event) => {
+                    if (disabled) return;
+                    onChange(event.target.value);
+                }}
+                tabIndex={-1}
+                required
+                aria-hidden="true"
+                disabled={disabled}
+            >
+                <option value="" disabled>{placeholder}</option>
+                {options.map((option) => (
+                    <option key={`${dropdownId}-hidden-${option}`} value={option}>
+                        {option}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+}
 
 function InputBoxWrapper({ title, children, hasMargin = true }) {
     return(
@@ -47,6 +170,20 @@ function RequiredTextarea({ title, onChange, value, placeholder, hasMargin = tru
                 value={ value }
                 onChange={ (e) => onChange(e.target.value) }
                 required
+            ></textarea>
+        </InputBoxWrapper>
+    );
+}
+
+export function OptionalTextarea({ title, onChange, value, placeholder, hasMargin = true }) {
+    return (
+        <InputBoxWrapper title={title} hasMargin={hasMargin}>
+            <textarea
+                className="simple-input textarea-input"
+                id={ title }
+                placeholder={ placeholder ?? title }
+                value={ value }
+                onChange={ (e) => onChange(e.target.value) }
             ></textarea>
         </InputBoxWrapper>
     );
@@ -102,23 +239,35 @@ export function SearchInputBox({ onChange, value }) {
     );
 }
 
-function Selector({ title, options, onChange, value, hasMargin = true, listSize, className, disabled = false }) {
-    const selectProps = listSize && listSize > 1 ? { size: listSize } : {};
-    const combinedClassName = ['selector', className, disabled ? 'selector--disabled' : ''].filter(Boolean).join(' ');
+export function Selector({
+    title,
+    options = [],
+    onChange,
+    value,
+    hasMargin = true,
+    listSize,
+    className,
+    disabled = false,
+    placeholder = 'Selecciona',
+    dropdownId
+}) {
+    const generatedId = dropdownId ?? (title ? `${title.toLowerCase().replace(/\s+/g, '-')}-selector` : undefined);
+    const combinedClassName = [className, disabled ? 'selector--disabled' : '']
+        .filter(Boolean)
+        .join(' ');
 
     return(
         <InputBoxWrapper title={title} hasMargin={hasMargin}>
-            <select 
-                className={combinedClassName} 
-                id={ title } 
-                value={ value }
-                onChange={ (e) => onChange(e.target.value) }
-                required
+            <DropdownSelect
+                value={value}
+                onChange={onChange}
+                options={options}
+                placeholder={placeholder ?? title ?? 'Selecciona'}
+                dropdownId={generatedId}
                 disabled={disabled}
-                {...selectProps}
-            >
-                { options.map( (option, i) => <option key={`${option}-${i}`} value={option}>{option}</option> ) }
-            </select>
+                className={combinedClassName}
+                listSize={listSize}
+            />
         </InputBoxWrapper>
     );
 }
@@ -270,11 +419,12 @@ function RequiredInputSelector({ title, value, onChange, options, optionSize }) 
         <InputBoxWrapper title={title}> 
             <div className="input-selector-container">
                 <div className="prefix-container">
-                    <RequiredSelector
+                    <DropdownSelect
                         options={allOptions}
-                        onChange={onChangeSelection}
                         value={selected}
-                        hasMargin={false}
+                        onChange={onChangeSelection}
+                        placeholder={title}
+                        dropdownId={`${title}-prefix-selector`}
                     />
                 </div>
 
@@ -368,4 +518,12 @@ export function WarningText({ text }) {
     return (
         <p className="warning-text">{text}</p>
     );
+}
+
+export function OptionalInput({ type, ...rest }) {
+    if (type === "textarea") {
+        return <OptionalTextarea {...rest} />;
+    }
+
+    return <RequiredInput type={type} {...rest} />;
 }

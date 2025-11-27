@@ -66,6 +66,14 @@ const DashboardPage = ({ children }) => {
     // Contenido del modal de tipo de cambio
     const contenidoTC = (
         <div className="frame-formEmergente modal-tipo-cambio">
+            <button
+                type="button"
+                className="btnCerrarModal"
+                aria-label="Cerrar"
+                onClick={handleCloseTCModal}
+            >
+                ×
+            </button>
             <h1>Dolar BCV</h1>
             <hr />
 
@@ -112,6 +120,7 @@ const DashboardPage = ({ children }) => {
                     contenido={contenidoTC} 
                     onClose={handleCloseTCModal}
                     onModalClick={() => setOpenStatus(false)}
+                    hideCloseButton
                 />
             )}
         </>

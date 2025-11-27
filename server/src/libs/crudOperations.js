@@ -376,6 +376,81 @@ export async function updateTableStatus(req, res) {
     });
 }
 
+export async function moveTableOccupancy(req, res) {
+    handleQueryExecution(res, async (db) => {
+        const { fromName, toName } = req.body ?? {};
+
+        if (!fromName || !toName || fromName === toName) {
+            res.status(400).json({ message: "Both table names are required and must be different" });
+            return;
+        }
+
+        const [fromRows] = await db.execute(
+            "SELECT Name, Status, SaleID, TimerStart, DeliveryTimeSeconds FROM Tables WHERE Name = ?",
+            [fromName]
+        );
+        if (fromRows.length === 0) {
+            res.status(404).json({ message: "Source table not found" });
+            return;
+        }
+
+        const [toRows] = await db.execute(
+            "SELECT Name, Status, SaleID, TimerStart, DeliveryTimeSeconds FROM Tables WHERE Name = ?",
+            [toName]
+        );
+        if (toRows.length === 0) {
+            res.status(404).json({ message: "Destination table not found" });
+            return;
+        }
+
+        const fromTable = fromRows[0];
+        const toTable = toRows[0];
+
+        if (fromTable.Status === "desocupada") {
+            res.status(400).json({ message: "Source table is already free" });
+            return;
+        }
+
+        if (toTable.Status !== "desocupada") {
+            res.status(400).json({ message: "Destination table must be free" });
+            return;
+        }
+
+        try {
+            await db.beginTransaction();
+
+            await db.execute(
+                "UPDATE Tables SET Status = ?, SaleID = ?, TimerStart = ?, DeliveryTimeSeconds = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE Name = ?",
+                ["desocupada", null, null, null, fromName]
+            );
+
+            await db.execute(
+                "UPDATE Tables SET Status = ?, SaleID = ?, TimerStart = ?, DeliveryTimeSeconds = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE Name = ?",
+                [fromTable.Status, fromTable.SaleID, fromTable.TimerStart, fromTable.DeliveryTimeSeconds, toName]
+            );
+
+            await db.commit();
+        } catch (error) {
+            await db.rollback();
+            throw error;
+        }
+
+        const [updatedFromRows] = await db.execute(
+            "SELECT Name, Status, SaleID, TimerStart, DeliveryTimeSeconds FROM Tables WHERE Name = ?",
+            [fromName]
+        );
+        const [updatedToRows] = await db.execute(
+            "SELECT Name, Status, SaleID, TimerStart, DeliveryTimeSeconds FROM Tables WHERE Name = ?",
+            [toName]
+        );
+
+        res.status(200).json({
+            from: updatedFromRows[0],
+            to: updatedToRows[0]
+        });
+    });
+}
+
 export async function getTopProducts(req, res) {
     handleQueryExecution(res, async (db) => {
         const query = `

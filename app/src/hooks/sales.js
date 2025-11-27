@@ -56,7 +56,7 @@ export function useEditSaleFormFields() {
             products.forEach((product) => productsArray.push([
                 product.Name, 
                 Number.parseFloat(product.Price).toFixed(2),
-                product.Quantity
+                Math.max(1, product.Quantity)
             ]));
 
             if (!areProductsInitialized)
@@ -68,9 +68,9 @@ export function useEditSaleFormFields() {
         getValues();
     }, []);
 
-    const onAddProduct = () => saleProducts.push(["", 0, 0]);
+    const onAddProduct = () => saleProducts.push(["", 0, 1]);
 
-    const onDeleteProduct = (name) => saleProducts.deleteIf((product) => product[0] === name);
+    const onDeleteProduct = (indexToDelete) => saleProducts.deleteIf((_, index) => index === indexToDelete);
 
     return [values, setters, saleProducts, onAddProduct, onDeleteProduct];
 }
