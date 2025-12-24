@@ -70,6 +70,14 @@ function Inicio(){
         setModalAbierto(true);
     };
 
+    const paymentMethodLabels = {
+        mobile: "Pago móvil",
+        cash: "Bs en efectivo",
+        pos: "Punto de venta",
+        zelle: "Zelle",
+        usd: "Divisas"
+    };
+
     const onStartMove = useCallback((tableName) => {
         if (!tableName) return;
         setMoveRequest({ from: tableName.toLowerCase(), label: tableName });
@@ -161,6 +169,29 @@ function Inicio(){
                                                     ? Number((deliveryPriceUsd * exchangeRate).toFixed(2))
                                                     : null;
 
+                                                const paymentDetail = Array.isArray(fetched.paymentRecords) && fetched.paymentRecords.length
+                                                    ? {
+                                                        selections: fetched.paymentRecords.map((record) => {
+                                                            const amountDollar = Number(record.AmountDollar ?? 0);
+                                                            const amountBsRaw = record.AmountBs !== null && record.AmountBs !== undefined
+                                                                ? Number(record.AmountBs)
+                                                                : null;
+
+                                                            return {
+                                                                id: record.Method,
+                                                                label: paymentMethodLabels[record.Method] || record.Method,
+                                                                fields: {
+                                                                    montoDollar: amountDollar > 0 ? amountDollar.toFixed(2) : "",
+                                                                    montoBs: Number.isFinite(amountBsRaw) ? amountBsRaw.toFixed(2) : "",
+                                                                    referencia: record.ReferenceNumber || "",
+                                                                    propietario: record.HolderName || "",
+                                                                    correo: record.HolderEmail || ""
+                                                                }
+                                                            };
+                                                        })
+                                                    }
+                                                    : null;
+
                                                 saleAlert(
                                                     fetched.ID || 'N/A',
                                                     client,
@@ -170,7 +201,7 @@ function Inicio(){
                                                     fetched.Address || null,
                                                     fetched.TableNumber || null,
                                                     fetched.Note || null,
-                                                    fetched.PaymentMethod || null,
+                                                    paymentDetail,
                                                     fetched.TotalBs ?? null,
                                                     deliveryPriceUsd,
                                                     deliveryPriceBs

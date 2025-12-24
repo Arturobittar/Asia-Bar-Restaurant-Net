@@ -45,6 +45,13 @@ export function questionAlert(title, message, onYes, onNo = () => {}, options = 
     });
 }
 
+const escapeHtml = (value = "") => String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 function simpleAlert(title, message, icon, iconColor, buttonText = "Vale") {
     Swal.fire({
         title: title,
@@ -149,7 +156,7 @@ export default class InfoField {
     }
 }
 
-function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod, deliveryPriceUsd = 0, deliveryPriceBs = null) {
+function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentDetail, deliveryPriceUsd = 0, deliveryPriceBs = null) {
     let htmlString = "<h3 class=\"alert-subtitle\">Información del Pedido</h3>\n";
 
     const data = [
@@ -179,8 +186,60 @@ function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, no
         data.push(new InfoField("Nota", note));
     }
 
-    const formattedPaymentMethod = paymentMethod && paymentMethod.trim() !== "" ? paymentMethod : "No registrado";
-    data.push(new InfoField("Método de Pago", formattedPaymentMethod));
+    const formatPaymentSummary = () => {
+        if (!Array.isArray(paymentDetail?.selections) || !paymentDetail.selections.length) {
+            return {
+                hasSelections: false,
+                summary: "No registrado",
+                tooltip: "No se registraron métodos para esta venta."
+            };
+        }
+
+        const summarizeAmount = (fields = {}) => {
+            const { montoDollar, montoBs } = fields;
+            if (montoDollar && montoBs) {
+                return `${montoDollar}$ / Bs ${montoBs}`;
+            }
+            if (montoDollar) {
+                return `${montoDollar}$`;
+            }
+            if (montoBs) {
+                return `Bs ${montoBs}`;
+            }
+            return "";
+        };
+
+        const detailLines = paymentDetail.selections.map(({ label, fields = {} }) => {
+            const amount = summarizeAmount(fields) || "Sin monto";
+            const extra =
+                fields.referencia
+                    ? ` | Ref: ${fields.referencia}`
+                    : (fields.correo || fields.propietario)
+                        ? ` | ${[fields.propietario, fields.correo].filter(Boolean).join(" - ")}`
+                        : "";
+            return `${label}: ${amount}${extra}`;
+        });
+        const summaryText = "Ver aquí como pagó";
+        const tooltipHtml = [summaryText, ...detailLines]
+            .map((line) => escapeHtml(line))
+            .join("<br />");
+
+        return {
+            hasSelections: true,
+            summary: summaryText,
+            tooltipHtml
+        };
+    };
+
+    const { hasSelections, summary: methodsSummary, tooltipHtml: methodsTooltipHtml } = formatPaymentSummary();
+    if (hasSelections) {
+        data.push(new InfoField(
+            "Método de Pago",
+            `<span class="payment-method-summary" tabindex="0">${methodsSummary}<span class="payment-method-tooltip">${methodsTooltipHtml}</span></span>`
+        ));
+    } else {
+        data.push(new InfoField("Método de Pago", methodsSummary));
+    }
 
     htmlString += "\t<div class=\"info-fields-container\">";
 
@@ -193,15 +252,15 @@ function getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, no
     return htmlString;
 }
 
-function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs, deliveryPriceUsd = 0, deliveryPriceBs = null) {
-    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentMethod, deliveryPriceUsd, deliveryPriceBs)
+function getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentDetail, totalBs, deliveryPriceUsd = 0, deliveryPriceBs = null) {
+    return getSaleInfoHtml(client, type, deliverymanName, address, tableNumber, note, paymentDetail, deliveryPriceUsd, deliveryPriceBs)
         + getProductsTable(products, totalBs, deliveryPriceUsd, deliveryPriceBs);
 }
 
-export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null, paymentMethod = null, totalBs = null, deliveryPriceUsd = 0, deliveryPriceBs = null) {
+export function saleAlert(number, client, type, products, deliverymanName = null, address = null, tableNumber = null, note = null, paymentDetail = null, totalBs = null, deliveryPriceUsd = 0, deliveryPriceBs = null) {
     Swal.fire({
         title: `Orden #${number}`,
-        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentMethod, totalBs, deliveryPriceUsd, deliveryPriceBs),
+        html: getSaleHtml(client, type, products, deliverymanName, address, tableNumber, note, paymentDetail, totalBs, deliveryPriceUsd, deliveryPriceBs),
         confirmButtonText: "Vale",
         confirmButtonColor: redHue,
     });

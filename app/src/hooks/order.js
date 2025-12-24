@@ -33,8 +33,8 @@ export function useOrderClearer() {
 export function useOrderDetailsChanger() {
     const { order, setOrder } = useContext(OrderContext);
 
-    const setNewDetails = async (clientID, clientName, type, address, deliveryPrice, deliverymanName, tableNumber, paymentMethod) => {
-        const newOrder = await new Order(clientID, clientName, type, address, deliveryPrice, deliverymanName, tableNumber, paymentMethod, order.products, order.note); 
+    const setNewDetails = async (clientID, clientName, type, address, deliveryPrice, deliverymanName, tableNumber) => {
+        const newOrder = await new Order(clientID, clientName, type, address, deliveryPrice, deliverymanName, tableNumber, order.products, order.note); 
         await setOrder(newOrder);
     };
     
@@ -88,15 +88,14 @@ export function useOnDetailsSubmit() {
             details.address,
             details.deliveryPrice,
             details.deliverymanName,
-            details.tableNumber,
-            details.paymentMethod
+            details.tableNumber
         );
 
         navigate(route);
     } 
 }
 
-export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliveryPrice, deliverymanName, tableNumber, paymentMethod) {
+export function useDetailsGetter(clientID, isNewClient, newName, foundName, type, address, deliveryPrice, deliverymanName, tableNumber) {
     const clientName = isNewClient ? newName : foundName;
 
     return () => { 
@@ -107,8 +106,7 @@ export function useDetailsGetter(clientID, isNewClient, newName, foundName, type
             address: address,
             deliveryPrice: Number.parseFloat(deliveryPrice) || 0,
             deliverymanName: deliverymanName,
-            tableNumber: tableNumber,
-            paymentMethod: paymentMethod
+            tableNumber: tableNumber
         }
     };
 }
@@ -227,7 +225,6 @@ export function useOrderChanger(products, note) {
             order.deliveryPrice,
             order.deliverymanName,
             order.tableNumber,
-            order.paymentMethod,
             products,
             note
         ); 

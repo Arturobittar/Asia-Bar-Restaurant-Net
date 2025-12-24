@@ -55,7 +55,6 @@ export default function OrderDetails() {
     
     const [deliverymanValue, setDeliverymanValue] = useState("");
     const [deliverymenOptions, setDeliverymenOptions] = useState([]);
-    const [paymentMethod, setPaymentMethod] = useState("");
 
     useEffect(() => {
         const fetchDeliverymen = async () => {
@@ -77,8 +76,7 @@ export default function OrderDetails() {
         typeValues[1],
         typeValues[2],
         deliverymanValue,
-        tableValue,
-        paymentMethod
+        tableValue
     );
     
     return (
@@ -101,8 +99,6 @@ export default function OrderDetails() {
                     tableOptions={tableOptionsList}
                     isTableLocked={isTableLocked}
                     isSaleTypeLocked={isSaleTypeLocked}
-                    paymentMethod={paymentMethod}
-                    paymentMethodSetter={setPaymentMethod}
                 /> 
             </Form>
         </DashboardPage>

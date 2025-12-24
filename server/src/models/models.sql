@@ -49,7 +49,6 @@ CREATE TABLE Sales (
     Note TEXT,
     Direction VARCHAR(100),
     TableNumber VARCHAR(20),
-    PaymentMethod VARCHAR(200) NOT NULL,
     TotalBs DECIMAL(12, 2),
     DeliveryPrice DECIMAL(10, 2) DEFAULT 0
 );
@@ -60,6 +59,19 @@ CREATE TABLE SaleDetails (
     Price FLOAT NOT NULL,
     Quantity INT NOT NULL,
     FOREIGN KEY (ID) REFERENCES Sales(ID) ON DELETE CASCADE
+);
+
+CREATE TABLE PaymentRecords (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    SaleID INT NOT NULL,
+    Method VARCHAR(50) NOT NULL,
+    AmountDollar DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    AmountBs DECIMAL(12, 2),
+    ReferenceNumber VARCHAR(50),
+    HolderName VARCHAR(100),
+    HolderEmail VARCHAR(100),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (SaleID) REFERENCES Sales(ID) ON DELETE CASCADE
 );
 
 CREATE TABLE Tables (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import DashboardPage from "../../components/layout/dashboard-page.js";
 import './confirmacionVenta.css';
 import { TarjetaProductoInformacionVenta, TarjetaNota, TarjetaDelivery } from './widgetsConfirmacionVenta';
@@ -13,6 +13,8 @@ import { getLastSaleID, onNewSale, updateTableStatus } from "../../utils/api.js"
 import { saleOptions } from "../../config/tables.js";
 
 import { questionAlert, successAlert, infoAlert, errorAlert } from "../../utils/alerts.js";
+import { ModalInicio } from "../Inicio/modalesInicio.js";
+import PaymentMethodCombobox from "../../components/payment/PaymentMethodCombobox.jsx";
 
 
 
@@ -21,6 +23,8 @@ function ContenidoConfirmacionVenta() {
     const orderClearer = useOrderClearer();
     const [tipoCambio, setTipoCambio] = useState(0);
     const ticketTotalsRef = useRef({ totalBs: null, exchangeRate: null });
+    const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [paymentDetail, setPaymentDetail] = useState(null);
 
     const products = order.products;
     const deliveryPrice = Number(order.deliveryPrice || 0);
@@ -75,7 +79,8 @@ function ContenidoConfirmacionVenta() {
             note: order.note,
             totalBs: totalBsPersistido,
             deliveryPrice: deliveryPrice,
-            products: productsArray
+            products: productsArray,
+            paymentDetail: paymentDetail || null
         }, async () => {
             if (isDineInSale) {
                 try {
@@ -137,7 +142,7 @@ function ContenidoConfirmacionVenta() {
             longPressTriggeredRef.current = false;
             return;
         }
-        imprimirTicket();
+        setPaymentModalOpen(true);
     };
     
     // Obtener el tipo de cambio al cargar el componente
@@ -161,6 +166,23 @@ function ContenidoConfirmacionVenta() {
             clearLongPressTimer();
         };
     }, []);
+
+    useEffect(() => {
+        if (!isPaymentModalOpen) {
+            return;
+        }
+
+        const syncExchangeRate = async () => {
+            try {
+                const tasa = await obtenerTipoCambio();
+                setTipoCambio(Number(tasa)  || 0)  ;
+            } catch (error) {
+                console.error("No se pudo sincronizar la tasa de cambio para el modal de pago:", error);
+            }
+        };
+
+        syncExchangeRate();
+    }, [isPaymentModalOpen]);
 
     const afterPrintDialog = (id) => {
         questionAlert(
@@ -236,11 +258,32 @@ function ContenidoConfirmacionVenta() {
                 exchangeRate: ticketTotalsRef.current.exchangeRate
             },
             deliveryPriceUsd: deliveryPrice,
-            deliveryPriceBs: ticketTotalsRef.current.deliveryPriceBs ?? deliveryBs
+            deliveryPriceBs: ticketTotalsRef.current.deliveryPriceBs ?? deliveryBs,
+            paymentDetail
         };
 
         await printOrderTicket(data, () => afterPrintDialog(id)); 
     };
+
+    const handlePaymentCancel = () => {
+        setPaymentModalOpen(false);
+    };
+
+    const handlePaymentConfirm = (detail) => {
+        setPaymentDetail(detail);
+        setPaymentModalOpen(false);
+        imprimirTicket();
+    };
+
+    const paymentSummaryText = useMemo(() => {
+        if (paymentDetail?.selections?.length) {
+            return paymentDetail.selections.map(({ label, fields }) => {
+                const amount = fields?.montoDollar || fields?.montoBs;
+                return amount ? `${label} (${amount})` : label;
+            }).join(" · ");
+        }
+        return order.paymentMethod?.trim() ? order.paymentMethod : "No registrado";
+    }, [paymentDetail, order.paymentMethod]);
 
     return (
     
@@ -263,7 +306,7 @@ function ContenidoConfirmacionVenta() {
 
                 <div className='metodoPagoResumen'>
                     <span className='metodoPagoEtiqueta'>Método de Pago</span>
-                    <span className='metodoPagoValor'>{order.paymentMethod?.trim() ? order.paymentMethod : "No registrado"}</span>
+                    <span className='metodoPagoValor'>{paymentSummaryText}</span>
                 </div>
             </div>
 
@@ -322,6 +365,21 @@ function ContenidoConfirmacionVenta() {
 
         </div>
 
+        {isPaymentModalOpen && (
+            <ModalInicio 
+                contenido={
+                    <PaymentMethodCombobox
+                        amountToPay={totalConDelivery}
+                        exchangeRate={tipoCambio}
+                        onCancel={handlePaymentCancel}
+                        onConfirm={handlePaymentConfirm}
+                    />
+                }
+                onClose={handlePaymentCancel}
+                overlayClassName="payment-modal-overlay"
+                modalClassName="payment-modal-container"
+            />
+        )}
 
     </div>
     

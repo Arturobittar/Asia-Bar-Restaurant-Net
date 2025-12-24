@@ -28,11 +28,14 @@ export function formatSequentialNumberInput(inputValue = "") {
     return trimmed;
 }
 
-
-
 // fn-reusables.js
 
+
 // ... (código existente)
+
+
+// ... (código existente)
+
 
 /**
  * Crea un componente de combobox reutilizable

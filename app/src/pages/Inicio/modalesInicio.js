@@ -5,7 +5,15 @@ import "./widgetsInicioCss/informacionDePedido.css"
 import {TarjetaProductoInformacionVenta} from "../ConfirmacionDeVenta/widgetsConfirmacionVenta.js"
 
 
-export function ModalInicio({contenido, onOpen, onClose, onModalClick, hideCloseButton = false}){
+export function ModalInicio({
+    contenido,
+    onOpen,
+    onClose,
+    onModalClick,
+    hideCloseButton = false,
+    overlayClassName = "",
+    modalClassName = ""
+}){
 
     // Cerrar modal al hacer clic en el overlay
     const handleOverlayClick = (e) => {
@@ -21,15 +29,21 @@ export function ModalInicio({contenido, onOpen, onClose, onModalClick, hideClose
         }
     };
 
+    const overlayClasses = ["overlayModalInicio", overlayClassName].filter(Boolean).join(" ");
+    const modalClasses = ["modalInicio", modalClassName].filter(Boolean).join(" ");
+
     return (
 
         <div className="mainModalInicio">
 
-            <div className="overlayModalInicio" onClick={handleOverlayClick}>
+            <div className={overlayClasses} onClick={handleOverlayClick}>
                     
-                <div className="modalInicio" onClick={handleModalClick}>
+                <div className={modalClasses} onClick={handleModalClick}>
                     {!hideCloseButton && (
-                        <button className="btnCerrarModal" onClick={onClose}>x</button>
+                        <button className="btnCancelarModal" onClick={onClose} aria-label="Cancelar">
+                            <span className="sr-only">Cancelar</span>
+                            <span className="btnCancelarModal__icon" aria-hidden="true">×</span>
+                        </button>
                     )}
 
                         {contenido}

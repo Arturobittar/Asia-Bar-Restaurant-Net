@@ -230,7 +230,7 @@ export function TypeInputs({ values, setters, deliverymanValue, deliverymanSette
     );
 }
 
-export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked, isSaleTypeLocked, paymentMethod, paymentMethodSetter }) {
+export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundName, newClientValues, newClientSetters, typeValues, typeSetters, deliverymanValue, deliverymanSetter, deliverymenOptions, tableValue, tableSetter, tableOptions, isTableLocked, isSaleTypeLocked }) {
     return (
         <>
             <RequiredInput type="id" title="Documento de Identidad del Cliente" value={clientId} onChange={setClientId} />
@@ -248,13 +248,6 @@ export function OrderDetailsContent({ clientId, setClientId, isNewClient, foundN
                 tableOptions={tableOptions}
                 isTableLocked={isTableLocked}
                 isSaleTypeLocked={isSaleTypeLocked}
-            />
-
-            <RequiredInput
-                type="text"
-                title="Método de Pago"
-                value={paymentMethod}
-                onChange={paymentMethodSetter}
             />
 
             <SubmitButton text="Continuar" />

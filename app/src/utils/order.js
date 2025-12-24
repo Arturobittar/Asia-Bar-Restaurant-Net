@@ -7,7 +7,6 @@ export default class Order{
         deliveryPrice = 0,
         deliverymanName = "",
         tableNumber = null,
-        paymentMethod = "",
         products = [],
         note = ""
     ) {
@@ -18,7 +17,6 @@ export default class Order{
         this.deliveryPrice = deliveryPrice;
         this.deliverymanName = deliverymanName;
         this.tableNumber = tableNumber;
-        this.paymentMethod = paymentMethod;
         this.products = products;
         this.note = note;
     }

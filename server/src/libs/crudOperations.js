@@ -3,6 +3,54 @@ import { getOrderedObject } from '../libs/utilities.js';
 
 const allowedTableStatuses = new Set(["desocupada", "ocupada", "ordenada", "consumiendo"]);
 
+const parseAmount = (value) => {
+    if (value === undefined || value === null || value === "") {
+        return null;
+    }
+    const normalized = typeof value === "string" ? value.replace(/,/g, "") : value;
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : null;
+};
+
+const sanitizeText = (value) => {
+    if (typeof value !== "string") {
+        return null;
+    }
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+};
+
+async function insertPaymentRecords(db, saleId, paymentDetail) {
+    if (!paymentDetail || !Array.isArray(paymentDetail.selections) || !paymentDetail.selections.length) {
+        return;
+    }
+
+    const insertQuery = "INSERT INTO PaymentRecords (SaleID, Method, AmountDollar, AmountBs, ReferenceNumber, HolderName, HolderEmail) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    for (const selection of paymentDetail.selections) {
+        if (!selection || !selection.id) {
+            continue;
+        }
+
+        const fields = selection.fields || {};
+        const amountDollar = parseAmount(fields.montoDollar);
+        const amountBs = parseAmount(fields.montoBs);
+        const referenceNumber = sanitizeText(fields.referencia);
+        const holderName = sanitizeText(fields.propietario);
+        const holderEmail = sanitizeText(fields.correo);
+
+        await db.execute(insertQuery, [
+            saleId,
+            selection.id,
+            amountDollar ?? 0,
+            amountBs ?? null,
+            referenceNumber,
+            holderName,
+            holderEmail
+        ]);
+    }
+}
+
 export async function sendAllRegistersFrom(res, tableName) {
     handleQueryExecution(res, async (db) => {
         const query = `SELECT * FROM ${tableName}`;
@@ -112,30 +160,54 @@ export function getLastSaleID(req, res) {
 export async function addSale(req, res) {
     handleQueryExecution(res, async (db) => {
         const body = req.body;
-        const products = body.products;
+        const products = Array.isArray(body.products) ? body.products : [];
+        const paymentDetail = body.paymentDetail;
 
-        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber, PaymentMethod, TotalBs, DeliveryPrice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const saleQuery = `INSERT INTO Sales (ID, ClientIdDocument, ClientName, Type, DeliverymanName, Note, Direction, TableNumber, TotalBs, DeliveryPrice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const productQuery = `INSERT INTO SaleDetails (ID, Name, Price, Quantity) VALUES (?, ?, ?, ?)`;
-        
-        const [results, fields] = await db.execute(saleQuery, [
-            body.id,
-            body.clientId,
-            body.clientName,
-            body.type,
-            body.deliverymanName || null,
-            body.note || null,
-            body.address || null,
-            body.tableNumber || null,
-            body.paymentMethod,
-            body.totalBs ?? null,
-            body.deliveryPrice ?? 0
-        ]);
 
-        products.map( async (product) => {
-            const [results, fields] = await db.execute(productQuery, [body.id, product.name, product.price, product.quantity]);
-        });
+        try {
+            await db.beginTransaction();
 
-        res.status(200).json({ message: "Sale successfully added" });
+            await db.execute(saleQuery, [
+                body.id,
+                body.clientId,
+                body.clientName,
+                body.type,
+                body.deliverymanName || null,
+                body.note || null,
+                body.address || null,
+                body.tableNumber || null,
+                body.totalBs ?? null,
+                body.deliveryPrice ?? 0
+            ]);
+
+            if (products.length) {
+                await Promise.all(
+                    products.map((product) =>
+                        db.execute(productQuery, [
+                            body.id,
+                            product.name,
+                            product.price,
+                            product.quantity
+                        ])
+                    )
+                );
+            }
+
+            await insertPaymentRecords(db, body.id, paymentDetail);
+
+            await db.commit();
+            res.status(200).json({ message: "Sale successfully added" });
+        } catch (error) {
+            try {
+                await db.rollback();
+            } catch (rollbackError) {
+                console.error("Rollback failed while adding sale:", rollbackError);
+            }
+            console.error("Error adding sale:", error);
+            res.status(500).json({ message: "Sale could not be added", error: error.message });
+        }
     });
 }
 
@@ -143,13 +215,8 @@ export async function updateSale(req, res) {
     handleQueryExecution(res, async (db) => {
         const id = req.params.id;
         const body = req.body;
-        const products = body.products;
-
-        const detectSaleQuery = "SELECT * FROM Sales WHERE ID = ?";
-        const [detectionResults, detectionFields] = await db.execute(detectSaleQuery, [id]);
-
-        if (detectionResults.length === 0)
-            res.status(404).json({message: "No entry with such id"})
+        const products = Array.isArray(body.products) ? body.products : [];
+        const paymentDetail = body.paymentDetail;
 
         const updateFields = [
             "ClientIdDocument = ?",
@@ -159,7 +226,6 @@ export async function updateSale(req, res) {
             "Note = ?",
             "Direction = ?",
             "TableNumber = ?",
-            "PaymentMethod = ?",
             "DeliveryPrice = ?"
         ];
 
@@ -171,7 +237,6 @@ export async function updateSale(req, res) {
             body.note || null,
             body.address || null,
             body.tableNumber || null,
-            body.paymentMethod,
             body.deliveryPrice ?? 0
         ];
 
@@ -181,19 +246,50 @@ export async function updateSale(req, res) {
         }
 
         const updateSaleQuery = `UPDATE Sales SET ${updateFields.join(", ")} WHERE ID = ?`;
-        updateValues.push(id);
-
-        await db.execute(updateSaleQuery, updateValues);
-
         const deleteOldProductsQuery = "DELETE FROM SaleDetails WHERE ID = ?";
-        const [deletionResults, deletionFields] = await db.execute(deleteOldProductsQuery, [id]);
-
         const productQuery = `INSERT INTO SaleDetails (ID, Name, Price, Quantity) VALUES (?, ?, ?, ?)`;
-        products.map( async (product) => {
-            const [results, fields] = await db.execute(productQuery, [id, product.name, product.price, product.quantity]);
-        });
+        const deletePaymentsQuery = "DELETE FROM PaymentRecords WHERE SaleID = ?";
 
-        res.status(200).json({ message: "Sale successfully updated" });
+        try {
+            await db.beginTransaction();
+
+            const detectSaleQuery = "SELECT 1 FROM Sales WHERE ID = ?";
+            const [detectionResults] = await db.execute(detectSaleQuery, [id]);
+
+            if (detectionResults.length === 0) {
+                await db.rollback();
+                res.status(404).json({ message: "No entry with such id" });
+                return;
+            }
+
+            const updatePayload = [...updateValues, id];
+            await db.execute(updateSaleQuery, updatePayload);
+
+            await db.execute(deleteOldProductsQuery, [id]);
+            if (products.length) {
+                await Promise.all(
+                    products.map((product) =>
+                        db.execute(productQuery, [id, product.name, product.price, product.quantity])
+                    )
+                );
+            }
+
+            if (paymentDetail && Array.isArray(paymentDetail.selections) && paymentDetail.selections.length) {
+                await db.execute(deletePaymentsQuery, [id]);
+                await insertPaymentRecords(db, id, paymentDetail);
+            }
+
+            await db.commit();
+            res.status(200).json({ message: "Sale successfully updated" });
+        } catch (error) {
+            try {
+                await db.rollback();
+            } catch (rollbackError) {
+                console.error("Rollback failed while updating sale:", rollbackError);
+            }
+            console.error("Error updating sale:", error);
+            res.status(500).json({ message: "Sale could not be updated", error: error.message });
+        }
     });
 }
 
@@ -279,20 +375,47 @@ export async function getDetailedSale(req, res) {
                 s.Note,
                 s.Direction AS Address,
                 s.TableNumber,
-                s.PaymentMethod,
                 s.TotalBs,
                 s.DeliveryPrice
             FROM Sales s
             WHERE s.ID = ?
         `;
         const [saleResult, saleFields] = await db.execute(saleQuery, id);
+
+        if (saleResult.length === 0) {
+            res.status(404).json({ message: "No entry with such id" });
+            return;
+        }
+
         const sale = saleResult[0];
 
         const detailsQuery = "SELECT Name, Price, Quantity FROM SaleDetails WHERE ID = ?";
         const [detailsResults, detailsFields] = await db.execute(detailsQuery, id);
 
-        sale.products = detailsResults; 
-        
+        const paymentQuery = `
+            SELECT 
+                Method,
+                AmountDollar,
+                AmountBs,
+                ReferenceNumber,
+                HolderName,
+                HolderEmail,
+                CreatedAt
+            FROM PaymentRecords
+            WHERE SaleID = ?
+            ORDER BY ID ASC
+        `;
+        const [paymentResults] = await db.execute(paymentQuery, id);
+
+        sale.products = detailsResults;
+        sale.paymentRecords = paymentResults;
+        const paymentCount = paymentResults.length;
+        sale.PaymentMethod = paymentCount === 0
+            ? "Sin registro"
+            : paymentCount === 1
+                ? "Pago único"
+                : "Pago mixto";
+
         res.status(200).json(sale);
     });
 }
